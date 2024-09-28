@@ -1,0 +1,79 @@
+$opacities: 1, 0.8, 0.6, 0.35;
+$font-sizes: '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '30px', '32px', '34px', '36px';
+$brand-color: #f9f9ff, #e9e8ff, #d3d1ff, #bfbaff, #aba3ff, #988cff, #7f72db, #675ab8, #504494, #3b3070;
+$grey-color: #f9f9f9, #e7e7ea, #c7c7ce, #a9a8b1, #8c8b95, #6f6e78, #5a5864, #45444f, #32313b, #201f26;
+
+$themes: (
+  light: (
+    'text-color': #201f26,
+    'bg-color': (
+      #ffffff,
+      #eef1f8,
+      #ffffff,
+      #ffffff,
+      #000000,
+    ),
+    'danger-color': (
+      #fc3332,
+      #d8242a,
+      #b51923,
+    ),
+  ),
+  dark: (
+    'text-color': #f9f9f9,
+    'bg-color': (
+      #16161a,
+      #232429,
+      #35363c,
+      #43444a,
+      #4f5159,
+    ),
+    'danger-color': (
+      #fd615b,
+      #fd8c83,
+      #feb5ac,
+    ),
+  ),
+);
+
+@mixin handleTheme($name) {
+  $theme-values: map-get($themes, $name);
+
+  @each $key, $value in $theme-values {
+    @if type-of($value) == 'list' {
+      $i: 0;
+      @each $color in $value {
+        --#{$key}-#{$i}: #{$color};
+        $i: $i + 1;
+      }
+    } @else {
+      @each $o in $opacities {
+        $i: index($opacities, $o)-1;
+        $rgba-color: rgba($value, $o);
+        --#{$key}-#{$i}: #{$rgba-color};
+      }
+    }
+  }
+}
+
+@mixin handleThemeVar($arr, $name, $reverse: false) {
+  $i: if($reverse, length($arr) - 1, 0);
+
+  @each $v in $arr {
+    --#{$name}-#{$i}: #{$v};
+    $i: if($reverse, $i - 1, $i + 1);
+  }
+}
+
+:root {
+  @include handleTheme('light');
+  @include handleThemeVar($font-sizes, 'font-size');
+  @include handleThemeVar($brand-color, 'brand-color');
+  @include handleThemeVar($grey-color, 'grey-color');
+}
+
+[data-dark] {
+  @include handleTheme('dark');
+  @include handleThemeVar($brand-color, 'brand-color', true);
+  @include handleThemeVar($grey-color, 'grey-color', true);
+}

@@ -1,0 +1,87 @@
+.login-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(89.34% 106.22% at 50% 103.94%, #000 0%, rgba(0, 0, 0, 0) 100%),
+    url('../../assets/images/login/bg.jpg') center center / 100% 100% no-repeat;
+
+  .login-main {
+    width: 600px;
+    height: 460px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 64px;
+    border: 1px solid rgba(190, 193, 251, 0.2);
+    border-radius: 20px;
+    box-shadow: 5px 20px 50px #000;
+    background: radial-gradient(106.32% 21.17% at 50% 0%, #100724 0%, rgba(0, 0, 0, 0) 100%),
+      radial-gradient(144.76% 144.76% at 50% -15.73%, rgba(42, 12, 234, 0.04) 0%, rgba(0, 0, 0, 0.1) 100%);
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+    backdrop-filter: blur(10px);
+    position: relative;
+
+    .logo-box {
+      text-align: center;
+
+      .icon {
+        width: 340px;
+        height: 116px;
+      }
+
+      .tips {
+        color: rgba(249, 249, 249, 0.6);
+        font-size: var(--font-size-1);
+        font-weight: 400;
+      }
+    }
+
+    .btn-box {
+      .login-btn {
+        display: flex;
+        width: 344px;
+        padding: 12px 24px;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(90deg, #ccc7eb 0%, #886fda 100%);
+        box-shadow: 0px 3px 8.6px 0px rgba(0, 0, 0, 0.18), 0px 3px 8.6px 0px rgba(74, 49, 255, 0.18) inset,
+          2px 0px 15.2px 0px rgba(74, 49, 255, 0.24) inset;
+        cursor: pointer;
+
+        .icon {
+          width: 26px;
+          height: 26px;
+        }
+
+        .text {
+          color: #f9f9f9;
+          font-size: var(--font-size-2);
+          font-weight: 600;
+        }
+      }
+      .tips {
+        color: rgba(249, 249, 249, 0.6);
+        font-size: var(--font-size-0);
+        font-weight: 400;
+        margin-top: 15px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+@include break-point('sm-and-down') {
+  .login-wrapper {
+    .login-main {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}

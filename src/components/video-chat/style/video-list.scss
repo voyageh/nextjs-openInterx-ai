@@ -1,0 +1,293 @@
+.video-list {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  .select-all {
+    font: var(--mui-font-body2);
+    color: var(--mui-palette-text-secondary);
+    display: flex;
+    align-items: center;
+  }
+
+  &__search {
+    padding-right: 20px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .search-input {
+      width: 70%;
+      --mui-shape-borderRadius: 99px;
+    }
+  }
+
+  &__filter {
+    height: 40px;
+    margin-top: 6px;
+    padding-right: 12px;
+    display: flex;
+    align-items: center;
+    position: relative;
+
+    .swiper-wrapper {
+      gap: 10px;
+    }
+
+    .video-tag {
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: var(--grey-color-0);
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--grey-color-2);
+      }
+    }
+
+    .icon-left,
+    .icon-right {
+      position: absolute;
+      height: 100%;
+      z-index: 99;
+      display: flex;
+      background: transparent;
+
+      &.hide {
+        display: none;
+      }
+
+      & > div {
+        height: 100%;
+        background-color: var(--bg-color-0);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+
+    .icon-left {
+      &::after {
+        content: '';
+        height: 100%;
+        width: 50px;
+        background: linear-gradient(to right, var(--bg-color-0) 20%, rgba(255, 255, 255, 0) 80%);
+      }
+    }
+
+    .icon-right {
+      right: 8px;
+      text-align: right;
+
+      &::before {
+        content: '';
+        height: 100%;
+        width: 50px;
+        background: linear-gradient(to left, var(--bg-color-0) 20%, rgba(255, 255, 255, 0) 80%);
+      }
+    }
+
+    .ant-tag-checkable {
+      font-size: 14px;
+      color: var(--text-color-0);
+      padding: 4px 10px;
+      border-color: transparent;
+      border-radius: 8px;
+      background-color: var(--grey-color-0);
+
+      &:hover {
+        color: var(--text-color-0);
+        background-color: var(--grey-color-2);
+      }
+    }
+
+    .ant-tag-checkable-checked {
+      color: var(--text-color-0);
+      background-color: var(--grey-color-2);
+    }
+  }
+
+  &__sort {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 12px;
+
+    .btn {
+      color: var(--text-color-0);
+      font-size: 14px;
+      font-weight: 400;
+
+      .icon-wrapper {
+        font-size: 20px;
+      }
+    }
+
+    .sort-btn:hover {
+      background-color: transparent !important;
+    }
+
+    .change-btn {
+      border-radius: 50%;
+    }
+
+    .del-button {
+      color: var(--danger-color-0);
+      font-size: 14px;
+
+      .icon-wrapper {
+        font-size: 20px;
+      }
+
+      &:hover {
+        color: var(--danger-color-0) !important;
+        background-color: transparent !important;
+      }
+    }
+  }
+
+  &__content {
+    flex: 1;
+    overflow: hidden;
+    margin-top: 12px;
+    padding-right: 5px;
+
+    .video-row {
+      display: flex;
+
+      .video-item {
+        margin-bottom: 14px;
+        padding-left: 5px;
+        padding-right: 5px;
+
+        &:first-child {
+          padding-left: 0;
+        }
+
+        &:last-child {
+          padding-right: 0;
+        }
+
+        &:hover .video-cover .cover-checkbox {
+          display: flex;
+        }
+
+        .video-cover {
+          height: 124px;
+          width: 100%;
+          border-radius: 8px;
+          position: relative;
+          background-position: center;
+          background-size: cover;
+          background-repeat: no-repeat;
+          overflow: hidden;
+          will-change: background-image;
+
+          .cover-checkbox {
+            position: absolute;
+            display: none;
+          }
+
+          .Mui-checked {
+            display: flex;
+          }
+
+          &__mask {
+            padding: 2px 8px;
+            border-radius: 15px;
+            background: rgba(32, 31, 38, 0.35);
+            position: absolute;
+            right: 10px;
+            bottom: 7px;
+          }
+          &__mask.text {
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1px;
+          }
+        }
+
+        .video-name {
+          color: var(--text-color-0);
+          font-size: 16px;
+          font-weight: 500;
+          line-height: 22px;
+          word-break: break-all;
+          margin: 6px 0;
+        }
+
+        .video-date {
+          color: var(--text-color-1);
+          font-size: 14px;
+          font-weight: 400;
+        }
+
+        .ant-skeleton-avatar-square {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      &.list {
+        .video-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          .video-cover {
+            width: 126px;
+            height: 80px;
+            border-radius: 8px;
+            position: relative;
+            background: lightgray center / cover no-repeat;
+          }
+
+          .video-name {
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+
+  &__action {
+    display: flex;
+    gap: 16px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 60px;
+
+    .start-btn {
+      color: var(--primary-color);
+      padding: 10px 20px;
+      background: linear-gradient(to right, var(--grey-color-1), var(--grey-color-1)), linear-gradient(to right, #5d62e7, #7227a0);
+      background-clip: padding-box, border-box;
+      background-origin: padding-box, border-box;
+      border: 2px solid transparent;
+      border-radius: 99px;
+
+      &:hover {
+        color: var(--primay-hover-color) !important;
+        border-color: #504494 !important;
+        background: linear-gradient(274deg, #6d00b0 -20.02%, #5a71ee 110.99%), linear-gradient(to right, #5d62e7, #7227a0) !important;
+      }
+    }
+  }
+}
+
+.delete-modal {
+  .ant-modal-body {
+    padding: 30px;
+    p {
+      color: var(--text-color-1);
+      font-size: var(--font-size-1);
+      font-weight: 400;
+    }
+  }
+}

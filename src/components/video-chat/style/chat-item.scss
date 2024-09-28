@@ -1,0 +1,23 @@
+.chat-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+
+  .msg-content {
+    max-width: 78%;
+    color: var(--text-color-0);
+    font-size: 16px;
+    line-height: 24px;
+    word-break: break-all;
+    padding: 12px;
+    border-radius: 12px 0px 12px 12px;
+    background-color: transparent;
+  }
+}
+
+.chat-item.mine {
+  flex-direction: row-reverse;
+  .msg-content {
+    background-color: var(--grey-color-0);
+  }
+}

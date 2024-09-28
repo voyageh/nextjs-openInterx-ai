@@ -1,0 +1,69 @@
+.openinterx-ai {
+  width: 100%;
+  height: 100%;
+  display: flex;
+
+  &__left {
+    width: 60px;
+    height: 100%;
+    padding: 24px 0px;
+    border-right: 1px solid var(--grey-color-2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    .logo-icon {
+      font-size: 36px;
+      color: var(--text-color-0);
+      cursor: pointer;
+    }
+
+    .menu-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      & > a {
+        padding: 6px;
+        border-radius: 8px;
+
+        &:hover {
+          background-color: rgba(var(--mui-palette-action-activeChannel) / var(--mui-palette-action-hoverOpacity));
+        }
+        
+        .menu-icon {
+          font-size: var(--font-size-8);
+          color: var(--text-color-1);
+        }
+        
+      }
+      & > a.active {
+        background: var(--brand-color-1);
+
+        .menu-icon {
+          color: var(--text-color-0);
+        }
+      }
+    }
+
+    .user-avatar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      img {
+        width: 36px;
+        height: 36px;
+        border-radius: 36px;
+        object-fit: cover;
+        cursor: pointer;
+        margin-top: 6px;
+      }
+    }
+  }
+  &__right {
+    flex: 1;
+    overflow: hidden;
+  }
+}

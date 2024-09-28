@@ -1,0 +1,22 @@
+@use '../common/var' as *;
+
+@mixin res($key, $map: $breakpoints) {
+  // loop breakpoint Map, return if present
+  @if map-has-key($map, $key) {
+    @media only screen and #{unquote(map-get($map, $key))} {
+      @content;
+    }
+  } @else {
+    @warn "Undefined points: `#{$map}`";
+  }
+}
+
+@mixin break-point($name) {
+  @if map-has-key($breakpoints-spec, $name) {
+    @media only screen and #{unquote(map-get($breakpoints-spec, $name))} {
+      @content;
+    }
+  } @else {
+    @warn "Undefined points: `#{$breakpoints-spec}`";
+  }
+}
