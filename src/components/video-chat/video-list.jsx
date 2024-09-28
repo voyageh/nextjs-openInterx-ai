@@ -14,6 +14,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Select,
+  MenuItem,
 } from '@mui/material'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
@@ -110,8 +112,7 @@ const VideoList = (props) => {
   }
 
   const handleSelectTag = (tag) => {
-    const nextSelectedTag = checked ? tag : 'All'
-    state.selectedTag
+    const nextSelectedTag = state.selectedTag === tag ? 'All' : tag
     dispatch({ type: 'setSelectedTags', payload: nextSelectedTag })
   }
 
@@ -243,6 +244,10 @@ const VideoList = (props) => {
               />
             )}
           />
+          <Select defaultValue={'1'} size="small">
+            <MenuItem value="1">KeyClips</MenuItem>
+            <MenuItem value="2">Global</MenuItem>
+          </Select>
 
           {/* {!state.value && (
             <Select defaultValue="1" size="large">
@@ -270,7 +275,7 @@ const VideoList = (props) => {
         >
           {tagsData.map((tag) => (
             <SwiperSlide key={tag} style={{ width: 'auto' }}>
-              <div className="video-tag" onClick={() => handleSelectTag(tag)}>
+              <div className={`video-tag ${tag === state.selectedTag ? 'active' : ''}`} onClick={() => handleSelectTag(tag)}>
                 {tag}
               </div>
             </SwiperSlide>

@@ -21,7 +21,15 @@
 
     .search-input {
       width: 70%;
-      --mui-shape-borderRadius: 99px;
+      display: flex;
+      border: 1px solid rgba(var(--mui-palette-common-onBackgroundChannel) / 0.23);
+      border-radius: 99px;
+      .MuiAutocomplete-root {
+        flex: 1;
+      }
+      .MuiOutlinedInput-notchedOutline {
+        border: none;
+      }
     }
   }
 
@@ -44,6 +52,7 @@
       background: var(--grey-color-0);
       cursor: pointer;
 
+      &.active,
       &:hover {
         background-color: var(--grey-color-2);
       }
