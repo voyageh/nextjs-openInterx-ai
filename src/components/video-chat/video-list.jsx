@@ -55,6 +55,7 @@ const initialState = {
   value: '',
   options: [],
   tags: [],
+  tagLoading: true,
   selectedTag: 'All',
   width: 0,
   size: 3,
@@ -318,6 +319,14 @@ const VideoList = () => {
               </div>
             </SwiperSlide>
           ))}
+          <div style={{ display: 'flex', gap: '0.6rem' }}>
+            <Skeleton variant="rounded" width="5rem" height="1.7rem" />
+            <Skeleton variant="rounded" width="5rem" height="1.7rem" />
+            <Skeleton variant="rounded" width="5rem" height="1.7rem" />
+            <Skeleton variant="rounded" width="5rem" height="1.7rem" />
+            <Skeleton variant="rounded" width="5rem" height="1.7rem" />
+            <Skeleton variant="rounded" width="5rem" height="1.7rem" />
+          </div>
         </Swiper>
         <div className="icon-left">
           <div>

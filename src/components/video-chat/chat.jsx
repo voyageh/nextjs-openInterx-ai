@@ -47,6 +47,20 @@ export default function ChatWindow() {
     setMsg(e.target.value)
   }
 
+  const mockApiMessage = (text) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const apiMessage = {
+          role: 'USER2222',
+          response: {
+            message: 'llkkkk' + text,
+          },
+        }
+        resolve(apiMessage)
+      }, 1000)
+    })
+  }
+
   const sendMsg = async (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
       setMsgList([
@@ -59,18 +73,15 @@ export default function ChatWindow() {
         },
       ])
       setMsg('')
-      const r = await send({
-        msg,
-        videoNoList: selecteds.map((item) => item.id),
-      })
+      // const r = await send({
+      //   msg,
+      //   videoNoList: selecteds.map((item) => item.id),
+      // })
+      
+      const r = await mockApiMessage(msg)
 
       setMsgList((pre) => {
-        console.log(pre)
-
-        return [
-          ...pre,
-          r,
-        ]
+        return [...pre, r]
       })
     }
   }

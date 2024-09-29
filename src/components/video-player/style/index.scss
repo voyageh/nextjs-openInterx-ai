@@ -30,6 +30,7 @@
         height: 3px;
         width: 100%;
         position: relative;
+
         &::before {
           content: '';
           position: absolute;
@@ -37,9 +38,10 @@
           top: 0;
           bottom: 0;
           right: calc(100% - var(--preview-position) * 100%);
-          background-color: rgb(150, 150, 150);
+          background-color: #d3d1ff;
           display: none;
         }
+
         &::after {
           content: '';
           position: absolute;
@@ -79,6 +81,10 @@
           height: 100%;
           .thumb-indicator {
             --scale: 1;
+          }
+
+          &::before {
+            display: block;
           }
         }
       }

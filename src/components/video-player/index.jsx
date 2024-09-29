@@ -14,6 +14,7 @@ const initialState = {
   loaded: 0,
   loadedSeconds: 0,
   played: 0,
+  position: 0,
   playedSeconds: 0,
   isFull: false,
   playbackRate: 1.0,
@@ -40,6 +41,8 @@ function reducer(state, action) {
     case 'setMuted':
       const volume = action.payload ? 0 : state.oldVolume
       return { ...state, muted: action.payload, volume }
+    case 'setPosition':
+      return { ...state, position: action.payload }
     default:
       return state
   }
@@ -116,6 +119,19 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
     screenfull.toggle(document.querySelector('.video-player'))
   }
 
+  const handleTimelineUpdate = (e) => {
+    const rect = e.target.getBoundingClientRect()
+    const percent = Math.min(Math.max(0, e.clientX - rect.x), rect.width) / rect.width
+    dispatch({ type: 'setPosition', payload: percent })
+  }
+
+  const toggleScrubbing = (e) => {
+    const rect = e.target.getBoundingClientRect()
+    const percent = Math.min(Math.max(0, e.clientX - rect.x), rect.width) / rect.width
+    playerRef.current.seekTo(percent)
+    dispatch({ type: 'setProgress', payload: { played: percent } })
+  }
+
   return (
     <div className="video-player">
       <ReactPlayer
@@ -135,7 +151,12 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
       />
       {controls && (
         <div className="video-player__control-wrapper">
-          <div className="timeline-container" style={{ '--preview-position': 0, '--progress-position': state.played }}>
+          <div
+            className="timeline-container"
+            style={{ '--preview-position': state.position, '--progress-position': state.played }}
+            onMouseMove={handleTimelineUpdate}
+            onMouseDown={toggleScrubbing}
+          >
             <div className="timeline">
               <img className="preview-img" />
               <div className="thumb-indicator"></div>

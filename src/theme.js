@@ -107,6 +107,19 @@ const theme = createTheme({
         },
       },
     },
+
+    MuiSkeleton: {
+      styleOverrides: {
+        root: {
+          background: 'var(--bg-color-1)',
+        },
+        wave: {
+          '&::after': {
+            // background: 'var(--bg-color-2)',
+          },
+        },
+      },
+    },
   },
 })
 
