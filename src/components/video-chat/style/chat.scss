@@ -90,7 +90,6 @@
       border-radius: 8px;
       background: var(--bg-color-1);
       caret-color: var(--brand-color-4);
-      padding: 4px 0px 4px 10px;
 
       input::placeholder {
         color: var(--text-color-3);
@@ -120,6 +119,7 @@
     display: none;
     justify-content: center;
     flex-direction: column;
+    z-index: 99;
 
     &.start {
       display: flex;

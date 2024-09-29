@@ -41,8 +41,8 @@
     align-items: center;
     position: relative;
 
-    .swiper-wrapper {
-      gap: 10px;
+    .swiper {
+      margin: 0;
     }
 
     .video-tag {
@@ -50,6 +50,7 @@
       padding: 4px 8px;
       border-radius: 4px;
       background: var(--grey-color-0);
+      margin: 0 5px;
       cursor: pointer;
 
       &.active,
@@ -127,13 +128,9 @@
     padding-right: 12px;
 
     .btn {
-      color: var(--text-color-0);
       font-size: 14px;
+      color: var(--text-color-0);
       font-weight: 400;
-
-      .icon-wrapper {
-        font-size: 20px;
-      }
     }
 
     .sort-btn:hover {
@@ -172,6 +169,7 @@
         margin-bottom: 14px;
         padding-left: 5px;
         padding-right: 5px;
+        cursor: pointer;
 
         &:first-child {
           padding-left: 0;
@@ -223,7 +221,7 @@
 
         .video-name {
           color: var(--text-color-0);
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 500;
           line-height: 22px;
           word-break: break-all;
@@ -232,7 +230,7 @@
 
         .video-date {
           color: var(--text-color-1);
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 400;
         }
 

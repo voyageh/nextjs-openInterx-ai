@@ -30,5 +30,14 @@ const nextConfig = {
 
     return config
   },
+
+  rewrites(){
+    return [
+      {
+        source: '/back/:path*',
+        destination: 'http://192.168.1.103:8081/:path*'
+      }
+    ]
+  }
 }
 export default nextConfig

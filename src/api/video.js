@@ -1,16 +1,50 @@
 import http from '@/utils/http'
 
-export const queryVideoList = (params) => {
-  return http.request('/api/videos', {
-    params,
-    baseURL: 'https://apifoxmock.com/m1/5110074-4772873-default',
+export const queryVideoTag = () => {
+  return http.request('/serve/video/getVideoTag')
+}
+
+export const queryVideoList = (data) => {
+  return http.request('/serve/video/search', {
+    method: 'POST',
+    data,
   })
 }
 
-export const upload = (data) => {
+export const delVidoe = (data) => {
+  return http.request('/serve/video/delete', {
+    method: 'POST',
+    data,
+  })
+}
+
+export const upload = (data, onUploadProgress) => {
   return http.request('/serve/video/upload', {
     data,
     method: 'post',
-    contentType: 'multipart/form-data',
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress,
+  })
+}
+
+export const uploadUrl = (data) => {
+  return http.request('/serve/video/videoUrlUpload', {
+    data,
+    method: 'post',
+  })
+}
+
+export const send = (data) => {
+  return http.request('/serve/video/question', {
+    data,
+    method: 'post',
+  })
+}
+
+export const getChatHistory = () => {
+  return http.request('/serve/video/getChatHistory', {
+    method: 'post',
   })
 }

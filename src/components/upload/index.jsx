@@ -1,10 +1,12 @@
-import { useState, forwardRef, useImperativeHandle } from 'react'
+import { useState, useReducer, forwardRef, useImperativeHandle } from 'react'
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, TextField, InputAdornment, Fab } from '@mui/material'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import Icon from '@/components/icon'
 import VideoPlayer from '@/components/video-player'
 import { Upload } from 'antd'
 import UploadIcon from '@/assets/images/upload/upload.svg'
+import { upload, uploadUrl } from '@/api/video'
+import { chunkArray } from '@/utils/array'
 
 import './index.scss'
 
@@ -12,21 +14,54 @@ const { Dragger } = Upload
 
 let urlInfoList = {}
 
+const initData = {
+  open: false,
+  tab: '1',
+  fileList: [],
+  urlList: [],
+  loading: false,
+}
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'init':
+      return { initData }
+    case 'setOpen':
+      return { ...state, open: action.payload }
+    case 'setTab':
+      return { ...state, tab: action.payload }
+    case 'setFileList':
+      return { ...state, fileList: action.payload }
+    case 'setUrlList':
+      return { ...state, urlList: action.payload }
+    case 'setLoading':
+      return { ...state, loading: action.payload }
+    default:
+      return state
+  }
+}
+
 export default forwardRef(function Upload(_, ref) {
-  const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState('1')
-  const [fileList, setFileList] = useState([])
-  const [urlList, setUrlList] = useState([])
+  const [state, dispatch] = useReducer(reducer, initData)
 
   const onChange = (_, key) => {
-    setTab(key)
+    dispatch({
+      type: 'setTab',
+      payload: key,
+    })
   }
   const handleClose = () => {
-    setOpen(false)
+    dispatch({
+      type: 'setOpen',
+      payload: false,
+    })
   }
 
   const handleOpen = () => {
-    setOpen(true)
+    dispatch({
+      type: 'setOpen',
+      payload: true,
+    })
   }
 
   useImperativeHandle(
@@ -43,23 +78,23 @@ export default forwardRef(function Upload(_, ref) {
   const uploadProps = {
     showUploadList: false,
     onRemove: (file) => {
-      const index = fileList.indexOf(file)
-      const newFileList = fileList.slice()
+      const index = state.fileList.indexOf(file)
+      const newFileList = state.fileList.slice()
       newFileList.splice(index, 1)
-      setFileList(newFileList)
+      dispatch({ type: 'setFileList', payload: newFileList })
     },
     beforeUpload: (file) => {
-      setFileList([...fileList, file])
+      dispatch({ type: 'setFileList', payload: [...state.fileList, file] })
       return false
     },
-    fileList,
+    fileList: state.fileList,
     multiple: true,
   }
   const handleVideoUrl = (e) => {
     if (e.key === 'Enter') {
       const url = e.target.value
-      if (!urlList.includes(url)) {
-        setUrlList([...urlList, url])
+      if (!state.urlList.includes(url)) {
+        dispatch({ type: 'setUrlList', payload: [...state.urlList, url] })
       }
     }
   }
@@ -68,26 +103,61 @@ export default forwardRef(function Upload(_, ref) {
     urlInfoList[info.url] = { ...info }
   }
 
-  const handleUpload = () => {
-    // const formData = new FormData()
-    // formData.append('file', fileList[0])
-    console.log(urlInfoList)
+  const confirmUpload = () => {
+    dispatch({ type: 'setLoading', payload: true })
+    handleClose()
+    handleUpload()
+  }
+
+  const onUploadProgress = (e) => {}
+
+  const handleUpload = async () => {
+    if (state.urlList.length > 0) {
+      await uploadUrl(
+        state.urlList.map((url) => {
+          const info = urlInfoList[url]
+          return {
+            videoName: info.videoName,
+            videoUrl: url,
+            duration: info.duration,
+            type: info.type,
+          }
+        })
+      )
+    }
+
+    const requestList = state.fileList.map((file) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      return upload(formData, onUploadProgress)
+    })
+
+    const newList = chunkArray(requestList, 5)
+    const uploadChunks = async () => {
+      for (const chunk of newList) {
+        await Promise.all(chunk) // 同时发送当前块的请求
+      }
+    }
+
+    uploadChunks()
+
+    dispatch({ type: 'init' })
   }
 
   return (
     <>
-      <Dialog open={open} onClose={handleClose} className="upload-dialog" maxWidth="xl">
+      <Dialog open={state.open} onClose={handleClose} disableRestoreFocus className="upload-dialog" maxWidth="xl">
         <DialogTitle>Upload Video</DialogTitle>
         <DialogContent sx={{ overflow: 'hidden' }}>
-          <Tabs value={tab} centered onChange={onChange}>
+          <Tabs value={state.tab} centered onChange={onChange}>
             <Tab label="Local Upload" value="1" />
             <Tab label="Upload via URL" value="2" />
           </Tabs>
 
           <div className="upload-content">
-            {tab === '1' ? (
+            {state.tab === '1' ? (
               <Dragger {...uploadProps}>
-                {fileList.length === 0 ? (
+                {state.fileList.length === 0 ? (
                   <div className="upload-tips-warpper">
                     <div className="upload-tips">Drag the video file here or click to browse the local file</div>
                     <div className="upload-tips-sub">Ultrices odio tempus adipiscing ornare euismod posuere vitae etiam tempor.</div>
@@ -96,7 +166,7 @@ export default forwardRef(function Upload(_, ref) {
                 ) : (
                   <OverlayScrollbarsComponent className="preview-list-warpper" defer>
                     <div className="preview-list">
-                      {fileList.map((file) => (
+                      {state.fileList.map((file) => (
                         <div key={file.uid} className="preview-item">
                           <Icon name="FileIcon" />
                           <div className="file-info">
@@ -132,7 +202,7 @@ export default forwardRef(function Upload(_, ref) {
                 </span>
                 <OverlayScrollbarsComponent className="preview-list-warpper" defer>
                   <div className="preview-list url-preview">
-                    {urlList.map((url) => (
+                    {state.urlList?.map((url) => (
                       <div key={url} className="preview-item">
                         <VideoPlayer url={url} controls={false} getVideoInfo={getVideoInfo} />
                       </div>
@@ -147,16 +217,16 @@ export default forwardRef(function Upload(_, ref) {
           <Button color="inherit" fullWidth size="small" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="contained" fullWidth size="small" onClick={handleUpload}>
+          <Button variant="contained" fullWidth size="small" onClick={confirmUpload}>
             Upload
           </Button>
         </DialogActions>
       </Dialog>
-      {
+      {state.loading && (
         <Fab variant="extended" color="success" sx={{ position: 'fixed', bottom: '5%', left: '40%' }}>
-          <UploadIcon /> <span>5 Videos Uploading</span>
+          <UploadIcon /> <span>{state.fileList.length} Videos Uploading</span>
         </Fab>
-      }
+      )}
     </>
   )
 })

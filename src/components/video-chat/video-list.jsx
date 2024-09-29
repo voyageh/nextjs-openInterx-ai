@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useReducer, useCallback } from 'react'
+import { useRef, useReducer, useCallback, useEffect } from 'react'
 import {
   Autocomplete,
   TextField,
@@ -28,25 +28,10 @@ import Upload from '@/components/upload'
 import VideoModal from '@/components/video-player/modal'
 import Checkbox from '@/components/checkbox'
 
-import { queryVideoList } from '@/api/video'
+import { queryVideoTag, queryVideoList } from '@/api/video'
 
 import 'swiper/css'
 import './style/video-list.scss'
-
-const tagsData = [
-  'All',
-  'Gaming',
-  'Baseball',
-  'Swimming',
-  'Badminton',
-  'Badminton1',
-  'Badminton2',
-  'Badminton3',
-  'Badminton4',
-  'Badminton5',
-  'Badminton6',
-  'Badminton7',
-]
 
 const calcSize = (width, type) => {
   let size = 3
@@ -69,6 +54,7 @@ const calcSize = (width, type) => {
 const initialState = {
   value: '',
   options: [],
+  tags: [],
   selectedTag: 'All',
   width: 0,
   size: 3,
@@ -84,12 +70,21 @@ function reducer(state, action) {
       return { ...state, value: action.payload }
     case 'setOptions':
       return { ...state, options: action.payload }
+    case 'setTags':
+      return { ...state, tags: action.payload }
     case 'setSelectedTags':
       return { ...state, selectedTag: action.payload }
     case 'setWidth':
       return { ...state, ...action.payload }
     case 'setCheckedList':
-      return { ...state, checkedList: action.payload }
+      if (action.flag) {
+        return { ...state, checkedList: action.payload }
+      }
+      if (state.checkedList[action.payload.id]) {
+        const { [action.payload.id]: _, ...checkedList } = state.checkedList
+        return { ...state, checkedList }
+      }
+      return { ...state, checkedList: { ...state.checkedList, [action.payload.id]: action.payload } }
     case 'setListType':
       let listType = state.listType === '' ? 'list' : ''
       const size = calcSize(state.width, listType)
@@ -102,10 +97,41 @@ function reducer(state, action) {
   }
 }
 
-const VideoList = (props) => {
+const VideoList = () => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const uploadRef = useRef(null)
   const videoRef = useRef(null)
+
+  useEffect(() => {
+    queryVideoTag().then((r) => {
+      dispatch({ type: 'setTags', payload: ['All', ...r.tags] })
+    })
+  }, [])
+
+  const { isFetching, data } = useQuery({
+    queryKey: ['video', state.selectedTag, state.value],
+    queryFn: () =>
+      queryVideoList({
+        searchValue: state.value,
+        tagNames: state.selectedTag === 'All' ? '' : state.selectedTag,
+        sortFileds: ['modifyTime'],
+        sort: 'ASC',
+      }),
+    initialData: {
+      videoResponseList: [],
+      total: 0,
+    },
+    initialDataUpdatedAt: 0,
+    staleTime: 60 * 1000,
+  })
+
+  const handleSearch = (_, newValue) => {
+    dispatch({ type: 'setValue', payload: newValue })
+  }
+
+  const hanldeQuerySug = (_, newValue) => {
+    console.log(newValue)
+  }
 
   const openUploadModal = () => {
     uploadRef.current.open()
@@ -116,40 +142,37 @@ const VideoList = (props) => {
     dispatch({ type: 'setSelectedTags', payload: nextSelectedTag })
   }
 
-  const selectLen = Object.values(state.checkedList).filter(Boolean).length
+  const selectLen = Object.keys(state.checkedList).length
   const indeterminate = selectLen > 0 && selectLen < 11
 
-  const onSelectVideo = (e) => {
+  const handleCheckboxClick = (e) => {
+    // 阻止事件冒泡
+    e.stopPropagation()
+  }
+
+  const onSelectVideo = (item) => {
     dispatch({
       type: 'setCheckedList',
-      payload: {
-        ...state.checkedList,
-        [e.target.value]: e.target.checked,
-      },
+      payload: item,
     })
   }
 
   const onSelectAll = (e) => {
+    const list = data.videoResponseList.reduce((pre, next) => {
+      pre[next.id] = next // 将 id 作为 key，item 作为 value
+      return pre
+    }, {})
+
     dispatch({
       type: 'setCheckedList',
-      payload: e.target.checked ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [],
+      flag: true,
+      payload: e.target.checked ? list : {},
     })
   }
 
   const switchList = () => {
     dispatch({ type: 'setListType' })
   }
-
-  const { isFetching, data } = useQuery({
-    queryKey: ['video'],
-    queryFn: () => queryVideoList({ page: 1, pageSize: 100 }),
-    initialData: {
-      list: [],
-      total: 0,
-    },
-    initialDataUpdatedAt: 0,
-    staleTime: 60 * 1000,
-  })
 
   const onResize = useCallback(({ width }) => {
     const size = calcSize(width, state.listType)
@@ -164,7 +187,7 @@ const VideoList = (props) => {
 
   const setDrag = useUniversalStore((state) => state.setDrag)
 
-  const onDragStart = (e) => {
+  const onDragStart = (e, itemData) => {
     const dragPreview = document.createElement('div')
     dragPreview.classList.add('drag-preview')
     const img = document.createElement('img')
@@ -172,12 +195,20 @@ const VideoList = (props) => {
     dragPreview.appendChild(img)
     const span = document.createElement('span')
     span.classList.add('count')
-    span.innerText = state.checkedList.length || 1
+    span.innerText = selectLen || 1
     dragPreview.appendChild(span)
-
     document.body.appendChild(dragPreview)
     e.dataTransfer.setDragImage(dragPreview, 30, 30)
-    e.dataTransfer.setData('application/json', JSON.stringify(data))
+
+    const dragData = []
+    if (selectLen === 0) {
+      dragData.push(itemData)
+    } else {
+      dragData.push(...Object.values(state.checkedList))
+    }
+    console.log('dragData', dragData)
+
+    e.dataTransfer.setData('application/json', JSON.stringify(dragData))
     setDrag('start')
 
     setTimeout(() => {
@@ -190,6 +221,10 @@ const VideoList = (props) => {
     setDrag('')
   }
 
+  const playerVideo = (url) => {
+    videoRef.current.open(url)
+  }
+
   const openDelModal = () => {
     dispatch({ type: 'setShowDel', payload: true })
   }
@@ -200,20 +235,28 @@ const VideoList = (props) => {
 
   const renderItem = useCallback(
     (item) => (
-      <Grid className="video-item" size={state.span} draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>
-        <div className="video-cover" style={{ backgroundImage: `url(${item.cover})` }}>
+      <Grid
+        className="video-item"
+        size={state.span}
+        draggable
+        onDragStart={(e) => onDragStart(e, item)}
+        onDragEnd={onDragEnd}
+        onClick={() => playerVideo(item.videoUrl)}
+      >
+        <div className="video-cover" style={{ backgroundImage: `url(${item.videoCoverImgUrl || '1.png'})` }}>
           <div className="video-cover__mask text">{item.duration}</div>
           <Checkbox
-            checked={state.checkedList[item.id]}
+            checked={!!state.checkedList[item.id]}
             value={item.id}
             size="large"
             className="checkbox-video cover-checkbox"
-            onChange={onSelectVideo}
+            onClick={handleCheckboxClick}
+            onChange={() => onSelectVideo(item)}
           />
         </div>
-        <div className="video-name ellipsis-2-lines">{item.name}</div>
-        {state.listType === 'list' && <div className="text">{item.duration}</div>}
-        <div className="video-date">{item.date}</div>
+        <div className="video-name ellipsis-2-lines">{item.videoName}</div>
+        {state.listType === 'list' && <div className="text">{item.videoTime}</div>}
+        <div className="video-date">{item.createTime}</div>
       </Grid>
     ),
     [state.span, state.checkedList]
@@ -224,6 +267,8 @@ const VideoList = (props) => {
       <div className="video-list__search">
         <div className="search-input">
           <Autocomplete
+            onChange={handleSearch}
+            onInputChange={hanldeQuerySug}
             size="small"
             freeSolo
             options={top100Films.map((option) => option.title)}
@@ -248,13 +293,6 @@ const VideoList = (props) => {
             <MenuItem value="1">KeyClips</MenuItem>
             <MenuItem value="2">Global</MenuItem>
           </Select>
-
-          {/* {!state.value && (
-            <Select defaultValue="1" size="large">
-              <Select.Option value="1">KeyClips</Select.Option>
-              <Select.Option value="2">Global</Select.Option>
-            </Select>
-          )} */}
         </div>
         <Tooltip title="upload" arrow>
           <IconButton onClick={openUploadModal}>
@@ -273,7 +311,7 @@ const VideoList = (props) => {
           }}
           modules={[Navigation]}
         >
-          {tagsData.map((tag) => (
+          {state.tags.map((tag) => (
             <SwiperSlide key={tag} style={{ width: 'auto' }}>
               <div className={`video-tag ${tag === state.selectedTag ? 'active' : ''}`} onClick={() => handleSelectTag(tag)}>
                 {tag}
@@ -302,7 +340,7 @@ const VideoList = (props) => {
       </div>
       <div className="video-list__sort">
         <div className="select-all">
-          <Checkbox size="small" /> all videos {data.total} total {selectLen > 0 && <span>{selectLen} selected</span>}
+          <Checkbox size="small" onChange={onSelectAll} /> all videos {data.total} total {selectLen > 0 && <span>{selectLen} selected</span>}
         </div>
         <div>
           {selectLen > 0 && (
@@ -310,7 +348,7 @@ const VideoList = (props) => {
               <Icon name={'DeleteIcon'} />
             </IconButton>
           )}
-          <Button variant="text" color="inherit" endIcon={<Icon name={'ArrowDown'} />}>
+          <Button className="btn" variant="text" color="inherit" endIcon={<Icon name={'ArrowDown'} />}>
             Upload Date
           </Button>
           <IconButton className="btn change-btn" onClick={switchList}>
@@ -322,7 +360,7 @@ const VideoList = (props) => {
         <VirtualList
           size={state.size}
           loading={isFetching}
-          data={data.list}
+          data={data.videoResponseList}
           estimateSize={220}
           rowClass={`video-row ${state.listType}`}
           wrapper={({ children, ...rest }) => (
@@ -359,7 +397,7 @@ const VideoList = (props) => {
         </div>
       )}
 
-      <Dialog maxWidth="xs" open={state.showDel} onClose={closeDelModal} centered>
+      <Dialog maxWidth="xs" open={state.showDel} onClose={closeDelModal} centered={true}>
         <DialogTitle>Delete videos？</DialogTitle>
         <DialogContent>
           <p>Once deleted, the video will be permanently removed and cannot be recovered.</p>

@@ -1,7 +1,17 @@
-import NextAuth from 'next-auth'
-import { authConfig } from './auth.config'
+import { NextResponse } from 'next/server'
+import { auth } from '@/auth'
 
-export default NextAuth(authConfig).auth
+export async function middleware(request, response) {
+  if (request.nextUrl.pathname.startsWith('/back')) {
+    const session = await auth()
+    const modifiedRequest = request.clone()
+    modifiedRequest.headers.set('authorization', session?.accessToken)
+    return NextResponse.next(modifiedRequest)
+  }
+
+  const res = await auth(request, response)  
+  return res
+}
 
 export const config = {
   // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher

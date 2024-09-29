@@ -62,6 +62,15 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiAutocomplete: {
+      styleOverrides: {
+        paper: {
+          background: 'var(--bg-color-1)',
+          marginTop: '0.3rem',
+          borderRadius: '0.5rem',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
@@ -73,7 +82,28 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRadius: '1rem',
-          background: '#16161a',
+          background: 'var(--bg-color-0)',
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          background: 'var(--grey-color-8)',
+          color: 'var(--grey-color-0)',
+          fontSize: '0.875rem',
+          borderRadius: '0.5rem',
+          padding: '0.5rem',
+        },
+        arrow: {
+          color: 'var(--grey-color-8)',
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          padding: '1rem',
         },
       },
     },

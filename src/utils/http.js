@@ -1,5 +1,4 @@
 import axios from "axios"
-// import { cookies } from "next/headers"
 
 export class Http {
   constructor(baseURL, config) {
@@ -26,11 +25,6 @@ export class Http {
   }
 
   handleRequest(config) {
-    // const token = cookies().get("OPENINTERX-TOKEN")
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`
-    // }
-
     if (typeof this.config.beforeRequest === "function") {
       this.config.beforeRequest(config)
     }
@@ -39,6 +33,7 @@ export class Http {
   }
 
   handleResponse(response) {
+    
     const data = response.data
 
     if (data instanceof Blob) {
@@ -65,4 +60,4 @@ export class Http {
   }
 }
 
-export default new Http("http://192.168.1.101:8081")
+export default new Http("/back")

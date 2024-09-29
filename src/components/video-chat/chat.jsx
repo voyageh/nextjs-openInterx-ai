@@ -1,29 +1,26 @@
 import { useState } from 'react'
-import { Empty } from 'antd'
-import { IconButton, Input, InputAdornment, List, ListItem, ListItemButton, ListItemText } from '@mui/material'
+import { IconButton, Input, InputAdornment, List, ListItem, ListItemText } from '@mui/material'
+import { useUniversalStore } from '@/store/universal'
 import Icon from '@/components/icon'
 import ChatItem from './chat-item'
-import { useUniversalStore } from '@/store/universal'
+import { send } from '@/api/video'
 import './style/chat.scss'
 
-const msg = [
-  {
-    text: 'How many houses are there in the picture?',
-    isMine: true,
-  },
-  {
-    text: 'There are three houses in the picture.',
-    isMine: false,
-  },
-  {
-    text: 'Give me a link to the football video',
-    isMine: true,
-  },
-]
 export default function ChatWindow() {
   const [show, setShow] = useState(false)
-  const [selecteds, setSelecteds] = useState([{}, {}])
+  const [selecteds, setSelecteds] = useState([])
   const [drag, setDrag] = useUniversalStore((state) => [state.drag, state.setDrag])
+  const [msg, setMsg] = useState('')
+  const [msgList, setMsgList] = useState([])
+
+  const onDragEnter = (e) => {
+    e.preventDefault()
+    setDrag('enter')
+  }
+
+  const onDragOver = (e) => {
+    e.preventDefault()
+  }
 
   const onDragLeave = (e) => {
     e.preventDefault()
@@ -33,16 +30,49 @@ export default function ChatWindow() {
       setDrag('start')
     }
   }
-  const onDragEnter = (e) => {
-    e.preventDefault()
-    setDrag('enter')
-  }
 
   const onDrop = (e) => {
     e.preventDefault()
     const data = e.dataTransfer.getData('application/json')
-    const obj = JSON.parse(data)
-    setSelecteds([...selecteds, {}])
+    const list = JSON.parse(data)
+    setSelecteds([...selecteds, ...list])
+  }
+
+  const onDelete = (id) => {
+    const newArr = selecteds.filter((item) => item.id !== id)
+    setSelecteds([...newArr])
+  }
+
+  const onChangeMsg = (e) => {
+    setMsg(e.target.value)
+  }
+
+  const sendMsg = async (e) => {
+    if (e.key === 'Enter' || e.type === 'click') {
+      setMsgList([
+        ...msgList,
+        {
+          role: 'USER',
+          response: {
+            message: msg,
+          },
+        },
+      ])
+      setMsg('')
+      const r = await send({
+        msg,
+        videoNoList: selecteds.map((item) => item.id),
+      })
+
+      setMsgList((pre) => {
+        console.log(pre)
+
+        return [
+          ...pre,
+          r,
+        ]
+      })
+    }
   }
 
   return (
@@ -53,11 +83,19 @@ export default function ChatWindow() {
             <span className="text">{selecteds.length} videos</span> <Icon name="DownIcon" />
           </div>
           <List className={`selected-video__list ${show ? 'show' : ''}`}>
-            {selecteds.map((item, index) => (
-              <ListItemButton key={index} className="selected-video__list__item">
-                <div className="cover" style={{ background: 'url(2.png) lightgray 50% / cover no-repeat' }} />
-                <ListItemText secondary="Jan 9, 2014" />
-              </ListItemButton>
+            {selecteds.map((item) => (
+              <ListItem
+                key={item.id}
+                className="selected-video__list__item"
+                secondaryAction={
+                  <IconButton edge="end" aria-label="delete" onClick={() => onDelete(item.id)}>
+                    <Icon name={'DeleteIcon'} />
+                  </IconButton>
+                }
+              >
+                <div className="cover" style={{ background: `url(${item.videoCoverImgUrl}) lightgray 50% / cover no-repeat` }} />
+                <ListItemText className="ellipsis-2-lines" secondary={item.videoName} />
+              </ListItem>
             ))}
           </List>
         </div>
@@ -71,28 +109,35 @@ export default function ChatWindow() {
         </div>
       </div>
       <div className="chat-content">
-        {msg.map((item, index) => (
-          <ChatItem key={index} {...item} />
+        {msgList.map((item, index) => (
+          <ChatItem key={index} data={item} />
         ))}
       </div>
       <div className="chat-footer">
         <Input
+          value={msg}
+          onChange={onChangeMsg}
+          onKeyDown={sendMsg}
           className="chat-input"
           placeholder="Paste video link here to upload quickly"
           disableUnderline
           startAdornment={
             <InputAdornment position="start">
-              <Icon name="Attachment" className="attachment-icon" />
+              <IconButton disableRipple>
+                <Icon name="Attachment" className="attachment-icon" />
+              </IconButton>
             </InputAdornment>
           }
           endAdornment={
             <InputAdornment position="start">
-              <Icon name="SendIcon" className="send-icon" />
+              <IconButton disableRipple onClick={sendMsg}>
+                <Icon name="SendIcon" className="send-icon" />
+              </IconButton>
             </InputAdornment>
           }
         />
       </div>
-      <div className={`chat-drag ${drag}`} onDrop={onDrop} onDragEnter={onDragEnter} onDragLeave={onDragLeave}>
+      <div className={`chat-drag ${drag}`} onDrop={onDrop} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver}>
         <div className="drag-text">Drag the video here</div>
         <div className="drag-tips">Please drag the video into this area. A new conversation will begin once the drag is complete</div>
       </div>

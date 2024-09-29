@@ -70,11 +70,13 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
   }, [])
 
   const onReady = (e) => {
-    
-    const videoName = e?.player?.player?.player?.videoTitle
-    const duration = e?.player?.player?.player?.getDuration()
-    getVideoInfo && getVideoInfo({ url, videoName, duration })
     setLoading(false)
+    if (getVideoInfo) {
+      const videoName = e?.player?.player?.player?.videoTitle
+      const duration = e?.player?.player?.player?.getDuration()
+      const type = e?.player?.player.constructor?.name?.toUpperCase()
+      getVideoInfo({ url, videoName, duration, type })
+    }
   }
   const handlePlayPause = (v) => {
     dispatch({ type: 'setPlaying', payload: v === void 0 ? !state.playing : v })
