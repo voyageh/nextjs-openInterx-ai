@@ -1,6 +1,7 @@
 import { useState, useRef, useReducer, useEffect } from 'react'
 import ReactPlayer from 'react-player'
-import { Spin, Slider } from 'antd'
+import { Spin, Slider as Slider2 } from 'antd'
+import { Slider } from '@mui/material'
 import { LoadingOutlined } from '@ant-design/icons'
 import screenfull from 'screenfull'
 import Icon from '@/components/icon'
@@ -14,52 +15,44 @@ const initialState = {
   loaded: 0,
   loadedSeconds: 0,
   played: 0,
-  position: 0,
   playedSeconds: 0,
+  position: 0,
   isFull: false,
   playbackRate: 1.0,
   volume: 0.5,
   oldVolume: 0.5,
   muted: false,
+  seeking: false,
 }
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'setPlaying':
-      return { ...state, playing: action.payload }
-    case 'setDuration':
-      return { ...state, duration: action.payload }
-    case 'setProgress':
+    case 'setState':
       return { ...state, ...action.payload }
-    case 'setFull':
-      return { ...state, isFull: action.payload }
-    case 'setPip':
-      return { ...state, pip: action.payload }
     case 'setVolume':
       const muted = action.payload > 0 ? false : true
       return { ...state, volume: action.payload, oldVolume: action.payload, muted }
     case 'setMuted':
       const volume = action.payload ? 0 : state.oldVolume
       return { ...state, muted: action.payload, volume }
-    case 'setPosition':
-      return { ...state, position: action.payload }
     default:
       return state
   }
 }
 
-export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
+export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true }) {
   const playerRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [state, dispatch] = useReducer(reducer, initialState)
   const [show, setShow] = useState(false)
+  const [isSeeked, setIsSeeked] = useState(false) // 控制是否已跳转
 
   useEffect(() => {
     const listener = () => {
       if (screenfull.isFullscreen) {
-        dispatch({ type: 'setFull', payload: true })
+        dispatch({ type: 'setState', payload: { isFull: true } })
       } else {
-        dispatch({ type: 'setFull', payload: false })
+        dispatch({ type: 'setState', payload: { isFull: false } })
       }
     }
     if (screenfull.isEnabled) {
@@ -80,17 +73,24 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
       const type = e?.player?.player.constructor?.name?.toUpperCase()
       getVideoInfo({ url, videoName, duration, type })
     }
+    if (!isSeeked && seekTo) {
+      playerRef.current.seekTo(seekTo, 'seconds')
+      dispatch({ type: 'setState', payload: { playedSeconds: seekTo } })
+      setIsSeeked(true) // 标记为已跳转
+    }
   }
   const handlePlayPause = (v) => {
-    dispatch({ type: 'setPlaying', payload: v === void 0 ? !state.playing : v })
+    const playing = v === void 0 ? !state.playing : v
+    dispatch({ type: 'setState', payload: { playing } })
   }
 
   const handleProgress = (data) => {
-    dispatch({ type: 'setProgress', payload: data })
+    dispatch({ type: 'setState', payload: data })
   }
 
+  // 获取视频时长
   const handleDuration = (duration) => {
-    dispatch({ type: 'setDuration', payload: duration })
+    dispatch({ type: 'setState', payload: { duration } })
   }
 
   // 静音
@@ -108,7 +108,8 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
 
   //画中画
   const handlePIP = () => {
-    dispatch({ type: 'setPip', payload: !state.pip })
+    const pip = !state.pip
+    dispatch({ type: 'setState', payload: { pip } })
   }
 
   // 全屏
@@ -119,17 +120,11 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
     screenfull.toggle(document.querySelector('.video-player'))
   }
 
-  const handleTimelineUpdate = (e) => {
-    const rect = e.target.getBoundingClientRect()
-    const percent = Math.min(Math.max(0, e.clientX - rect.x), rect.width) / rect.width
-    dispatch({ type: 'setPosition', payload: percent })
+  const changeTimeline = (_, value) => {
+    dispatch({ type: 'setState', payload: { position: value } })
   }
-
-  const toggleScrubbing = (e) => {
-    const rect = e.target.getBoundingClientRect()
-    const percent = Math.min(Math.max(0, e.clientX - rect.x), rect.width) / rect.width
-    playerRef.current.seekTo(percent)
-    dispatch({ type: 'setProgress', payload: { played: percent } })
+  const jumpTo = (_, value) => {
+    playerRef.current.seekTo(value, 'seconds')
   }
 
   return (
@@ -151,16 +146,42 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
       />
       {controls && (
         <div className="video-player__control-wrapper">
-          <div
-            className="timeline-container"
-            style={{ '--preview-position': state.position, '--progress-position': state.played }}
-            onMouseMove={handleTimelineUpdate}
-            onMouseDown={toggleScrubbing}
-          >
-            <div className="timeline">
-              <img className="preview-img" />
-              <div className="thumb-indicator"></div>
-            </div>
+          <div className="timeline-container">
+            <Slider
+              value={state.position}
+              className="timeline"
+              aria-label="time-indicator"
+              size="small"
+              min={0}
+              step={1}
+              max={state.duration}
+              onChange={changeTimeline}
+              onChangeCommitted={jumpTo}
+              sx={(t) => ({
+                height: 4,
+                '& .MuiSlider-thumb': {
+                  width: 8,
+                  height: 8,
+                  transition: '0.3s cubic-bezier(.47,1.64,.41,.8)',
+                  '&::before': {
+                    boxShadow: '0 2px 12px 0 rgba(0,0,0,0.4)',
+                  },
+                  '&:hover, &.Mui-focusVisible': {
+                    boxShadow: `0px 0px 0px 8px ${'rgb(0 0 0 / 16%)'}`,
+                    ...t.applyStyles('dark', {
+                      boxShadow: `0px 0px 0px 8px ${'rgb(255 255 255 / 16%)'}`,
+                    }),
+                  },
+                  '&.Mui-active': {
+                    width: 20,
+                    height: 20,
+                  },
+                },
+                '& .MuiSlider-rail': {
+                  opacity: 0.28,
+                },
+              })}
+            />
           </div>
 
           <div className="video-controls">
@@ -180,7 +201,7 @@ export default function VideoPlayer({ url, getVideoInfo, controls = true }) {
                 <div onClick={handleToggleMuted}>{!state.muted ? <Icon name="SoundIcon" /> : <Icon name="MuteIcon" />}</div>
                 <div className={`volume-slider ${show ? 'show' : ''}`}>
                   <div className="volume-value">{Math.round(state.volume * 100)}</div>
-                  <Slider vertical min={0} max={1} value={state.volume} step={0.01} tooltip={{ formatter: null }} onChange={handleVolumeChange} />
+                  <Slider2 vertical min={0} max={1} value={state.volume} step={0.01} tooltip={{ formatter: null }} onChange={handleVolumeChange} />
                 </div>
               </div>
               <div className="video-btn" onClick={handlePIP}>

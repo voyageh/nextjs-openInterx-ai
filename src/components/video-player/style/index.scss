@@ -19,73 +19,12 @@
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(102, 102, 102, 0) 100%);
 
     .timeline-container {
-      height: 7px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
       padding: 0 1rem;
-
       .timeline {
-        background-color: rgba(255, 255, 255, 0.64);
-        height: 3px;
-        width: 100%;
-        position: relative;
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          right: calc(100% - var(--preview-position) * 100%);
-          background-color: #d3d1ff;
-          display: none;
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          right: calc(100% - var(--progress-position) * 100%);
-          background-color: #aba3ff;
-        }
-        .thumb-indicator {
-          --scale: 0;
-          position: absolute;
-          transform: translateX(-50%) scale(var(--scale));
-          height: 200%;
-          top: -50%;
-          left: calc(var(--progress-position) * 100%);
-          background-color: #aba3ff;
-          border-radius: 50%;
-          transition: transform 150ms ease-in-out;
-          aspect-ratio: 1 / 1;
-        }
-        .preview-img {
-          position: absolute;
-          height: 80px;
-          aspect-ratio: 16 / 9;
-          top: -1rem;
-          transform: translate(-50%, -100%);
-          left: calc(var(--preview-position) * 100%);
-          border-radius: 0.25rem;
-          border: 2px solid white;
-          display: none;
-        }
-      }
-
-      &:hover {
-        .timeline {
-          height: 100%;
-          .thumb-indicator {
-            --scale: 1;
-          }
-
-          &::before {
-            display: block;
-          }
+        padding: 5px 0;
+        .MuiSlider-rail {
+          opacity: 0.6;
+          color: #f9f9f9;
         }
       }
     }
@@ -101,13 +40,13 @@
         display: flex;
         align-items: center;
         gap: 16px;
+        padding-bottom: 10px;
 
         .video-btn {
           color: rgba(255, 255, 255, 0.7);
           font-size: 24px;
           line-height: 0;
           cursor: pointer;
-          padding: 10px 0;
           position: relative;
 
           .volume-slider {

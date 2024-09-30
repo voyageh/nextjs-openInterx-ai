@@ -30,20 +30,16 @@ const ChatItem = ({ data }) => {
   }, [data])
 
   const videoRef = useRef(null)
-  const openPlayer = () => {
-    videoRef.current.open('https://www.youtube.com/watch?v=rrtoHpJA1nQ')
+  const openPlayer = (item) => {
+    videoRef.current.open(item.videoUrl, item.timeStamp)
   }
 
   return (
     <div className={clsx('chat-item', { mine: data.role === 'USER' })}>
       <div className="msg-content">
         <div> {message}</div>
-        {data.role === 'USER2222' && (
-          <img
-            src="https://images.stockcake.com/public/0/1/b/01b9e21e-c60f-4f91-abe8-482ecb30045d/family-picnic-day-stockcake.jpg"
-            onClick={openPlayer}
-          />
-        )}
+        {data.role === 'ASSISTANT' &&
+          data?.response?.videoKeyFrameList?.map((item) => <img key={item.keyFrame} src={item.keyFrame} onClick={() => openPlayer(item)} />)}
       </div>
 
       <VideoModal ref={videoRef} />

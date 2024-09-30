@@ -1,5 +1,5 @@
-import { useState, useReducer, forwardRef, useImperativeHandle } from 'react'
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, TextField, InputAdornment, Fab } from '@mui/material'
+import { useReducer, forwardRef, useImperativeHandle } from 'react'
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, TabPanel, TextField, InputAdornment, Fab } from '@mui/material'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import Icon from '@/components/icon'
 import VideoPlayer from '@/components/video-player'
@@ -7,10 +7,13 @@ import { Upload } from 'antd'
 import UploadIcon from '@/assets/images/upload/upload.svg'
 import { upload, uploadUrl } from '@/api/video'
 import { chunkArray } from '@/utils/array'
+import pLimit from 'p-limit'
 
 import './index.scss'
 
 const { Dragger } = Upload
+
+const limit = pLimit(5)
 
 let urlInfoList = {}
 
@@ -25,11 +28,13 @@ const initData = {
 function reducer(state, action) {
   switch (action.type) {
     case 'init':
-      return { initData }
+      return { ...initData }
     case 'setOpen':
       return { ...state, open: action.payload }
     case 'setTab':
       return { ...state, tab: action.payload }
+    case 'setFile':
+      return { ...state, fileList: [...state.fileList, action.payload] }
     case 'setFileList':
       return { ...state, fileList: action.payload }
     case 'setUrlList':
@@ -43,6 +48,8 @@ function reducer(state, action) {
 
 export default forwardRef(function Upload(_, ref) {
   const [state, dispatch] = useReducer(reducer, initData)
+
+  
 
   const onChange = (_, key) => {
     dispatch({
@@ -75,18 +82,20 @@ export default forwardRef(function Upload(_, ref) {
     []
   )
 
+  const delFile = (e, index) => {
+    e.stopPropagation()
+    const newFileList = state.fileList.slice()
+    newFileList.splice(index, 1)
+    dispatch({ type: 'setFileList', payload: newFileList })
+  }
+
   const uploadProps = {
     showUploadList: false,
-    onRemove: (file) => {
-      const index = state.fileList.indexOf(file)
-      const newFileList = state.fileList.slice()
-      newFileList.splice(index, 1)
-      dispatch({ type: 'setFileList', payload: newFileList })
-    },
     beforeUpload: (file) => {
-      dispatch({ type: 'setFileList', payload: [...state.fileList, file] })
+      dispatch({ type: 'setFile', payload: file })
       return false
     },
+
     fileList: state.fileList,
     multiple: true,
   }
@@ -109,39 +118,40 @@ export default forwardRef(function Upload(_, ref) {
     handleUpload()
   }
 
-  const onUploadProgress = (e) => {}
-
   const handleUpload = async () => {
-    if (state.urlList.length > 0) {
-      await uploadUrl(
-        state.urlList.map((url) => {
-          const info = urlInfoList[url]
-          return {
-            videoName: info.videoName,
-            videoUrl: url,
-            duration: info.duration,
-            type: info.type,
-          }
-        })
-      )
-    }
-
-    const requestList = state.fileList.map((file) => {
-      const formData = new FormData()
-      formData.append('file', file)
-      return upload(formData, onUploadProgress)
-    })
-
-    const newList = chunkArray(requestList, 5)
-    const uploadChunks = async () => {
-      for (const chunk of newList) {
-        await Promise.all(chunk) // 同时发送当前块的请求
-      }
-    }
-
-    uploadChunks()
-
-    dispatch({ type: 'init' })
+    // const requestList = []
+    // state.urlList.forEach((url) => {
+    //   requestList.push(
+    //     limit(() =>
+    //     )
+    //   )
+    // })
+    // if (state.urlList.length > 0) {
+    //   await uploadUrl(
+    //     state.urlList.map((url) => {
+    //       const info = urlInfoList[url]
+    //       return {
+    //         videoName: info.videoName,
+    //         videoUrl: url,
+    //         duration: info.duration,
+    //         type: info.type,
+    //       }
+    //     })
+    //   )
+    // }
+    // const requestList = state.fileList.map((file) => {
+    //   const formData = new FormData()
+    //   formData.append('file', file)
+    //   return upload(formData)
+    // })
+    // const newList = chunkArray(requestList, 5)
+    // const uploadChunks = async () => {
+    //   for (const chunk of newList) {
+    //     await Promise.all(chunk) // 同时发送当前块的请求
+    //   }
+    // }
+    // await uploadChunks()
+    // dispatch({ type: 'init' })
   }
 
   return (
@@ -149,12 +159,12 @@ export default forwardRef(function Upload(_, ref) {
       <Dialog open={state.open} onClose={handleClose} disableRestoreFocus className="upload-dialog" maxWidth="xl">
         <DialogTitle>Upload Video</DialogTitle>
         <DialogContent sx={{ overflow: 'hidden' }}>
-          <Tabs value={state.tab} centered onChange={onChange}>
-            <Tab label="Local Upload" value="1" />
+          <Tabs value={state.tab} centered={true} onChange={onChange}>
+            <Tab label="Local Upload" value="1"></Tab>
             <Tab label="Upload via URL" value="2" />
           </Tabs>
-
-          <div className="upload-content">
+          
+          {/* <div className="upload-content">
             {state.tab === '1' ? (
               <Dragger {...uploadProps}>
                 {state.fileList.length === 0 ? (
@@ -166,13 +176,14 @@ export default forwardRef(function Upload(_, ref) {
                 ) : (
                   <OverlayScrollbarsComponent className="preview-list-warpper" defer>
                     <div className="preview-list">
-                      {state.fileList.map((file) => (
+                      {state.fileList.map((file, index) => (
                         <div key={file.uid} className="preview-item">
                           <Icon name="FileIcon" />
                           <div className="file-info">
-                            <div className="file-info__name">{file.name}</div>
+                            <div className="ellipsis-2-lines file-info__name ">{file.name}</div>
                             <div className="file-info__size">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
                           </div>
+                          <Icon name="DeleteIcon" className="del-icon" onClick={(e) => delFile(e, index)} />
                         </div>
                       ))}
                     </div>
@@ -211,8 +222,9 @@ export default forwardRef(function Upload(_, ref) {
                 </OverlayScrollbarsComponent>
               </>
             )}
-          </div>
+          </div> */}
         </DialogContent>
+
         <DialogActions>
           <Button color="inherit" fullWidth size="small" onClick={handleClose}>
             Cancel

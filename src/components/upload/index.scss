@@ -22,7 +22,7 @@
       flex-direction: column;
       justify-content: center;
     }
-    
+
     .upload-tips {
       color: var(--grey-color-7);
       font-size: 16px;
@@ -60,6 +60,7 @@
           border-radius: 8px;
           background: var(--grey-color-2);
           padding: 12px;
+          position: relative;
 
           .file-info {
             margin-left: 10px;
@@ -70,6 +71,8 @@
               color: var(--text-color-1);
               font-size: var(--font-size-1);
               font-weight: 500;
+              text-align: left;
+              -webkit-line-clamp: 1;
             }
 
             &__size {
@@ -79,11 +82,19 @@
               text-align: left;
             }
           }
+
+          .del-icon{
+            position: absolute;
+            top: 0;
+            right: 0;
+            cursor: pointer;
+            color: #f9f9f9;
+          }
         }
       }
 
-      .url-preview{
-        .preview-item{
+      .url-preview {
+        .preview-item {
           padding: 0;
         }
       }

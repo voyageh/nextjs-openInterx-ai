@@ -27,8 +27,9 @@ import { useUniversalStore } from '@/store/universal'
 import Upload from '@/components/upload'
 import VideoModal from '@/components/video-player/modal'
 import Checkbox from '@/components/checkbox'
+import { enqueueSnackbar } from 'notistack'
 
-import { queryVideoTag, queryVideoList } from '@/api/video'
+import { queryVideoTag, queryVideoList, delVidoe } from '@/api/video'
 
 import 'swiper/css'
 import './style/video-list.scss'
@@ -109,7 +110,7 @@ const VideoList = () => {
     })
   }, [])
 
-  const { isFetching, data } = useQuery({
+  const { isFetching, data, refetch } = useQuery({
     queryKey: ['video', state.selectedTag, state.value],
     queryFn: () =>
       queryVideoList({
@@ -189,10 +190,17 @@ const VideoList = () => {
   const setDrag = useUniversalStore((state) => state.setDrag)
 
   const onDragStart = (e, itemData) => {
+    const dragData = []
+    if (selectLen === 0) {
+      dragData.push(itemData)
+    } else {
+      dragData.push(...Object.values(state.checkedList))
+    }
+
     const dragPreview = document.createElement('div')
     dragPreview.classList.add('drag-preview')
     const img = document.createElement('img')
-    img.src = '1.png'
+    img.src = dragData[0]?.videoCoverImgUrl
     dragPreview.appendChild(img)
     const span = document.createElement('span')
     span.classList.add('count')
@@ -200,21 +208,16 @@ const VideoList = () => {
     dragPreview.appendChild(span)
     document.body.appendChild(dragPreview)
     e.dataTransfer.setDragImage(dragPreview, 30, 30)
-
-    const dragData = []
-    if (selectLen === 0) {
-      dragData.push(itemData)
-    } else {
-      dragData.push(...Object.values(state.checkedList))
-    }
-    console.log('dragData', dragData)
-
     e.dataTransfer.setData('application/json', JSON.stringify(dragData))
     setDrag('start')
 
     setTimeout(() => {
       document.body.removeChild(dragPreview)
     }, 0)
+  }
+
+  const startConversation = () => {
+    // setSelectedVideos([...Object.values(state.checkedList)], true)
   }
 
   const onDragEnd = (e) => {
@@ -231,6 +234,14 @@ const VideoList = () => {
   }
 
   const closeDelModal = () => {
+    dispatch({ type: 'setShowDel', payload: false })
+  }
+
+  const confirmDelete = async () => {
+    await delVidoe(Object.keys(state.checkedList))
+    enqueueSnackbar('Delete successfully!', { variant: 'success', anchorOrigin: { vertical: 'top', horizontal: 'center' } })
+    dispatch({ type: 'setCheckedList', flag: true, payload: {} })
+    refetch()
     dispatch({ type: 'setShowDel', payload: false })
   }
 
@@ -319,14 +330,14 @@ const VideoList = () => {
               </div>
             </SwiperSlide>
           ))}
-          <div style={{ display: 'flex', gap: '0.6rem' }}>
+          {/* <div style={{ display: 'flex', gap: '0.6rem' }}>
             <Skeleton variant="rounded" width="5rem" height="1.7rem" />
             <Skeleton variant="rounded" width="5rem" height="1.7rem" />
             <Skeleton variant="rounded" width="5rem" height="1.7rem" />
             <Skeleton variant="rounded" width="5rem" height="1.7rem" />
             <Skeleton variant="rounded" width="5rem" height="1.7rem" />
             <Skeleton variant="rounded" width="5rem" height="1.7rem" />
-          </div>
+          </div> */}
         </Swiper>
         <div className="icon-left">
           <div>
@@ -402,11 +413,13 @@ const VideoList = () => {
 
       {selectLen > 0 && (
         <div className="video-list__action">
-          <Button className="btn start-btn">Start a new conversation</Button>
+          <Button className="btn start-btn" onClick={startConversation}>
+            Start a new conversation
+          </Button>
         </div>
       )}
 
-      <Dialog maxWidth="xs" open={state.showDel} onClose={closeDelModal} centered={true}>
+      <Dialog maxWidth="xs" open={state.showDel} onClose={closeDelModal}>
         <DialogTitle>Delete videos？</DialogTitle>
         <DialogContent>
           <p>Once deleted, the video will be permanently removed and cannot be recovered.</p>
@@ -415,7 +428,7 @@ const VideoList = () => {
           <Button color="inherit" fullWidth size="small" onClick={closeDelModal}>
             Cancel
           </Button>
-          <Button variant="contained" fullWidth size="small" color="secondary" onClick={closeDelModal}>
+          <Button variant="contained" fullWidth size="small" color="secondary" onClick={confirmDelete}>
             Delete
           </Button>
         </DialogActions>

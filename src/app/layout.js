@@ -4,6 +4,7 @@ import NextTopLoader from 'nextjs-toploader'
 import { QueryClientProvider } from '@tanstack/react-query'
 import theme, { queryClient } from '@/theme'
 import { Roboto } from 'next/font/google'
+import SnackbarProvider from '@/components/notistack/provider'
 
 import './globals.scss'
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
       <body className={roboto.className}>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider theme={theme}>
+            <SnackbarProvider />
             <NextTopLoader
               initialPosition={0.08}
               crawlSpeed={200}

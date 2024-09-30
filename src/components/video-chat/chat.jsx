@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { IconButton, Input, InputAdornment, List, ListItem, ListItemText } from '@mui/material'
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import { useUniversalStore } from '@/store/universal'
 import Icon from '@/components/icon'
 import ChatItem from './chat-item'
 import { send } from '@/api/video'
 import './style/chat.scss'
+
 
 export default function ChatWindow() {
   const [show, setShow] = useState(false)
@@ -47,20 +49,6 @@ export default function ChatWindow() {
     setMsg(e.target.value)
   }
 
-  const mockApiMessage = (text) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const apiMessage = {
-          role: 'USER2222',
-          response: {
-            message: 'llkkkk' + text,
-          },
-        }
-        resolve(apiMessage)
-      }, 1000)
-    })
-  }
-
   const sendMsg = async (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
       setMsgList([
@@ -73,12 +61,10 @@ export default function ChatWindow() {
         },
       ])
       setMsg('')
-      // const r = await send({
-      //   msg,
-      //   videoNoList: selecteds.map((item) => item.id),
-      // })
-      
-      const r = await mockApiMessage(msg)
+      const r = await send({
+        msg,
+        videoNoList: selecteds.map((item) => item.id),
+      })
 
       setMsgList((pre) => {
         return [...pre, r]
@@ -119,11 +105,14 @@ export default function ChatWindow() {
           </IconButton>
         </div>
       </div>
-      <div className="chat-content">
-        {msgList.map((item, index) => (
-          <ChatItem key={index} data={item} />
-        ))}
-      </div>
+      <OverlayScrollbarsComponent className="chat-content" defer>
+        <div>
+          {msgList.map((item, index) => (
+            <ChatItem key={index} data={item} />
+          ))}
+        </div>
+      </OverlayScrollbarsComponent>
+
       <div className="chat-footer">
         <Input
           value={msg}
