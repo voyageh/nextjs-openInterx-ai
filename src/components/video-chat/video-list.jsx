@@ -287,7 +287,7 @@ const VideoList = () => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                placeholder="Search keyclip22"
+                placeholder="Search keyclip"
                 slotProps={{
                   input: {
                     ...params.InputProps,
