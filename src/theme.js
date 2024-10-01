@@ -73,6 +73,9 @@ const theme = createTheme({
     },
     MuiButton: {
       styleOverrides: {
+        outlined: {
+          borderColor: 'var(--bg-color-2)',
+        },
         root: {
           textTransform: 'none', // 禁用大写
         },
@@ -86,6 +89,21 @@ const theme = createTheme({
         },
       },
     },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          padding: '0.5rem 1.25rem',
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          padding: '1rem',
+        },
+      },
+    },
+
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
@@ -97,13 +115,6 @@ const theme = createTheme({
         },
         arrow: {
           color: 'var(--grey-color-8)',
-        },
-      },
-    },
-    MuiDialogActions: {
-      styleOverrides: {
-        root: {
-          padding: '1rem',
         },
       },
     },

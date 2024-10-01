@@ -66,6 +66,8 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
   }, [])
 
   const onReady = (e) => {
+    console.log(e);
+    
     setLoading(false)
     if (getVideoInfo) {
       const videoName = e?.player?.player?.player?.videoTitle

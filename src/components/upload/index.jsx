@@ -1,17 +1,15 @@
 import { useReducer, forwardRef, useImperativeHandle } from 'react'
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, TabPanel, TextField, InputAdornment, Fab } from '@mui/material'
+import UploadVideo from './upload'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import Icon from '@/components/icon'
 import VideoPlayer from '@/components/video-player'
-import { Upload } from 'antd'
 import UploadIcon from '@/assets/images/upload/upload.svg'
 import { upload, uploadUrl } from '@/api/video'
 import { chunkArray } from '@/utils/array'
 import pLimit from 'p-limit'
 
 import './index.scss'
-
-const { Dragger } = Upload
 
 const limit = pLimit(5)
 
@@ -48,8 +46,6 @@ function reducer(state, action) {
 
 export default forwardRef(function Upload(_, ref) {
   const [state, dispatch] = useReducer(reducer, initData)
-
-  
 
   const onChange = (_, key) => {
     dispatch({
@@ -159,11 +155,10 @@ export default forwardRef(function Upload(_, ref) {
       <Dialog open={state.open} onClose={handleClose} disableRestoreFocus className="upload-dialog" maxWidth="xl">
         <DialogTitle>Upload Video</DialogTitle>
         <DialogContent sx={{ overflow: 'hidden' }}>
-          <Tabs value={state.tab} centered={true} onChange={onChange}>
-            <Tab label="Local Upload" value="1"></Tab>
-            <Tab label="Upload via URL" value="2" />
-          </Tabs>
-          
+          <UploadVideo />
+
+          {/* <Upload /> */}
+
           {/* <div className="upload-content">
             {state.tab === '1' ? (
               <Dragger {...uploadProps}>
@@ -226,7 +221,7 @@ export default forwardRef(function Upload(_, ref) {
         </DialogContent>
 
         <DialogActions>
-          <Button color="inherit" fullWidth size="small" onClick={handleClose}>
+          <Button color="inherit" fullWidth size="small" variant="outlined" onClick={handleClose}>
             Cancel
           </Button>
           <Button variant="contained" fullWidth size="small" onClick={confirmUpload}>

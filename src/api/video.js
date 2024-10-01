@@ -22,7 +22,7 @@ export const upload = (data, onUploadProgress) => {
   return http.request('/serve/video/upload', {
     data,
     method: 'post',
-    timeout: 36000,
+    timeout: 60000,
     headers: {
       'Content-Type': 'multipart/form-data',
     },
