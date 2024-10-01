@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   sassOptions: {
     additionalData: `
     @import '@/assets/style/mixins/mixins.scss';
@@ -31,13 +32,13 @@ const nextConfig = {
     return config
   },
 
-  rewrites(){
+  rewrites() {
     return [
       {
         source: '/back/:path*',
-        destination: 'http://192.168.1.103:8081/:path*'
-      }
+        destination: 'http://192.168.1.103:8081/:path*',
+      },
     ]
-  }
+  },
 }
 export default nextConfig
