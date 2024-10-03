@@ -4,7 +4,7 @@ export const queryVideoTag = () => {
   return http.request('/serve/video/getVideoTag')
 }
 
-export const queryVideoList = (data) => {
+export const queryVideoList = (data) => {  
   return http.request('/serve/video/search', {
     method: 'POST',
     data,
@@ -22,7 +22,7 @@ export const upload = (data, onUploadProgress) => {
   return http.request('/serve/video/upload', {
     data,
     method: 'post',
-    timeout: 60000,
+    timeout: 1800000,
     headers: {
       'Content-Type': 'multipart/form-data',
     },

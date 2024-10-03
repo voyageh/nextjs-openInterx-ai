@@ -2,7 +2,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 import NextTopLoader from 'nextjs-toploader'
 import { QueryClientProvider } from '@tanstack/react-query'
-import theme, { queryClient } from '@/theme'
+import { theme, queryClient } from '@/config'
 import { Roboto } from 'next/font/google'
 import SnackbarProvider from '@/components/notistack/provider'
 

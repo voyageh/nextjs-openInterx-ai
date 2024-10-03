@@ -19,16 +19,25 @@ import {
 } from '@mui/material'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
+import SearchIcon from '@mui/icons-material/Search'
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
+import GridViewIcon from '@mui/icons-material/GridView'
 import Icon from '@/components/icon'
 import { useResizeDetector } from 'react-resize-detector'
 import VirtualList from '@/components/virtual-list'
 import { useQuery } from '@tanstack/react-query'
 import { useUniversalStore } from '@/store/universal'
+import { useShallow } from 'zustand/react/shallow'
 import Upload from '@/components/upload'
 import VideoModal from '@/components/video-player/modal'
 import Checkbox from '@/components/checkbox'
 import { enqueueSnackbar } from 'notistack'
-
 import { queryVideoTag, queryVideoList, delVidoe } from '@/api/video'
 
 import 'swiper/css'
@@ -55,29 +64,25 @@ const calcSize = (width, type) => {
 const initialState = {
   value: '',
   options: [],
+  type: 'KEYCLIP',
   tags: [],
   tagLoading: true,
   selectedTag: 'All',
+  checkedList: {},
+  listType: '',
+  sort: 'DESC',
+  sortFileds: ['modifyTime'],
   width: 0,
   size: 3,
   span: 0,
-  checkedList: {},
-  listType: '',
   showDel: false,
 }
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'setValue':
-      return { ...state, value: action.payload }
-    case 'setOptions':
-      return { ...state, options: action.payload }
-    case 'setTags':
-      return { ...state, tags: action.payload }
-    case 'setSelectedTags':
-      return { ...state, selectedTag: action.payload }
-    case 'setWidth':
+    case 'setState': {
       return { ...state, ...action.payload }
+    }
     case 'setCheckedList':
       if (action.flag) {
         return { ...state, checkedList: action.payload }
@@ -92,8 +97,6 @@ function reducer(state, action) {
       const size = calcSize(state.width, listType)
       const span = 24 / size
       return { ...state, listType, size, span }
-    case 'setShowDel':
-      return { ...state, showDel: action.payload }
     default:
       return state
   }
@@ -106,18 +109,19 @@ const VideoList = () => {
 
   useEffect(() => {
     queryVideoTag().then((r) => {
-      dispatch({ type: 'setTags', payload: ['All', ...r.tags] })
+      dispatch({ type: 'setState', payload: { tags: ['All', ...r.tags] } })
     })
   }, [])
 
   const { isFetching, data, refetch } = useQuery({
-    queryKey: ['video', state.selectedTag, state.value],
+    queryKey: ['video-list', state.value, state.selectedTag, state.sortFileds, state.sort],
     queryFn: () =>
       queryVideoList({
         searchValue: state.value,
+        type: state.type,
         tagNames: state.selectedTag === 'All' ? '' : state.selectedTag,
-        sortFileds: ['modifyTime'],
-        sort: 'ASC',
+        sortFileds: state.sortFileds,
+        sort: state.sort,
       }),
     initialData: {
       videoResponseList: [],
@@ -127,26 +131,34 @@ const VideoList = () => {
     staleTime: 60 * 1000,
   })
 
+  const handleChangeSearchType = (e) => {
+    dispatch({ type: 'setState', payload: { type: e.target.value } })
+  }
+
   const handleSearch = (_, newValue) => {
-    dispatch({ type: 'setValue', payload: newValue })
+    dispatch({ type: 'setState', payload: { value: newValue } })
   }
 
   const hanldeQuerySug = (_, newValue) => {
-    console.log(newValue)
-  }
-
-  const openUploadModal = () => {
-    uploadRef.current.open()
+    // 输入时查询搜索建议
   }
 
   const handleSelectTag = (tag) => {
     const nextSelectedTag = state.selectedTag === tag ? 'All' : tag
-    dispatch({ type: 'setSelectedTags', payload: nextSelectedTag })
+    dispatch({ type: 'setState', payload: { selectedTag: nextSelectedTag } })
+  }
+
+  const handleSort = (key) => {
+    const sort = state.sort === 'DESC' ? 'ASC' : 'DESC'
+    const sortFileds = [key]
+    dispatch({ type: 'setState', payload: { sort, sortFileds } })
+  }
+
+  const openUploadModal = () => {
+    uploadRef.current?.open()
   }
 
   const selectLen = Object.keys(state.checkedList).length
-  const indeterminate = selectLen > 0 && selectLen < 11
-
   const handleCheckboxClick = (e) => {
     // 阻止事件冒泡
     e.stopPropagation()
@@ -179,7 +191,7 @@ const VideoList = () => {
   const onResize = useCallback(({ width }) => {
     const size = calcSize(width, state.listType)
     const span = 24 / size
-    dispatch({ type: 'setWidth', payload: { width, size, span } })
+    dispatch({ type: 'setState', payload: { width, size, span } })
   }, [])
 
   const { ref: listRef } = useResizeDetector({
@@ -187,7 +199,7 @@ const VideoList = () => {
     onResize,
   })
 
-  const setDrag = useUniversalStore((state) => state.setDrag)
+  const [setDrag, setSelectedVideos] = useUniversalStore(useShallow((state) => [state.setDrag, state.setSelectedVideos]))
 
   const onDragStart = (e, itemData) => {
     const dragData = []
@@ -207,7 +219,7 @@ const VideoList = () => {
     span.innerText = selectLen || 1
     dragPreview.appendChild(span)
     document.body.appendChild(dragPreview)
-    e.dataTransfer.setDragImage(dragPreview, 30, 30)
+    e.dataTransfer.setDragImage(dragPreview, 50, 50)
     e.dataTransfer.setData('application/json', JSON.stringify(dragData))
     setDrag('start')
 
@@ -216,8 +228,16 @@ const VideoList = () => {
     }, 0)
   }
 
-  const startConversation = () => {
-    // setSelectedVideos([...Object.values(state.checkedList)], true)
+  const startConversation = (e, v) => {
+    e.stopPropagation()
+
+    let sVideos = [v]
+    if (!v) {
+      sVideos = Object.values(state.checkedList)
+      dispatch({ type: 'setCheckedList', flag: true, payload: {} })
+    }
+
+    setSelectedVideos(sVideos, true)
   }
 
   const onDragEnd = (e) => {
@@ -230,19 +250,19 @@ const VideoList = () => {
   }
 
   const openDelModal = () => {
-    dispatch({ type: 'setShowDel', payload: true })
+    dispatch({ type: 'setState', payload: { showDel: true } })
   }
 
   const closeDelModal = () => {
-    dispatch({ type: 'setShowDel', payload: false })
+    dispatch({ type: 'setState', payload: { showDel: false } })
   }
 
   const confirmDelete = async () => {
     await delVidoe(Object.keys(state.checkedList))
-    enqueueSnackbar('Delete successfully!', { variant: 'success', anchorOrigin: { vertical: 'top', horizontal: 'center' } })
+    enqueueSnackbar('Delete successfully!', { variant: 'success' })
     dispatch({ type: 'setCheckedList', flag: true, payload: {} })
     refetch()
-    dispatch({ type: 'setShowDel', payload: false })
+    closeDelModal()
   }
 
   const renderItem = useCallback(
@@ -268,7 +288,17 @@ const VideoList = () => {
         </div>
         <div className="video-name ellipsis-2-lines">{item.videoName}</div>
         {state.listType === 'list' && <div className="text">{item.videoTime}</div>}
-        <div className="video-date">{item.createTime}</div>
+        <div className="video-date">
+          <div>{item.createTime}</div>
+          <div>
+            <IconButton size="small" onClick={(e) => startConversation(e, item)}>
+              <Icon name="NewChatIcon" />
+            </IconButton>
+            <IconButton size="small">
+              <MoreHorizIcon fontSize="inherit" />
+            </IconButton>
+          </div>
+        </div>
       </Grid>
     ),
     [state.span, state.checkedList]
@@ -281,7 +311,6 @@ const VideoList = () => {
           <Autocomplete
             onChange={handleSearch}
             onInputChange={hanldeQuerySug}
-            size="small"
             freeSolo
             options={top100Films.map((option) => option.title)}
             renderInput={(params) => (
@@ -293,7 +322,7 @@ const VideoList = () => {
                     ...params.InputProps,
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Icon name="SearchIcon" />
+                        <SearchIcon />
                       </InputAdornment>
                     ),
                   },
@@ -301,13 +330,13 @@ const VideoList = () => {
               />
             )}
           />
-          <Select defaultValue={'1'} size="small">
-            <MenuItem value="1">KeyClips</MenuItem>
-            <MenuItem value="2">Global</MenuItem>
+          <Select value={state.type} onChange={handleChangeSearchType}>
+            <MenuItem value="KEYCLIP">KeyClips</MenuItem>
+            <MenuItem value="GLOBAL">Global</MenuItem>
           </Select>
         </div>
         <Tooltip title="upload" arrow>
-          <IconButton onClick={openUploadModal}>
+          <IconButton size="medium" onClick={openUploadModal}>
             <Icon name="AddVideo" />
           </IconButton>
         </Tooltip>
@@ -343,7 +372,7 @@ const VideoList = () => {
           <div>
             <Tooltip title="Previous" arrow>
               <IconButton>
-                <Icon name="LeftIcon" />
+                <KeyboardArrowLeftIcon />
               </IconButton>
             </Tooltip>
           </div>
@@ -352,7 +381,7 @@ const VideoList = () => {
           <div>
             <Tooltip title="Next" arrow>
               <IconButton>
-                <Icon name="RightIcon" />
+                <KeyboardArrowRightIcon />
               </IconButton>
             </Tooltip>
           </div>
@@ -360,19 +389,26 @@ const VideoList = () => {
       </div>
       <div className="video-list__sort">
         <div className="select-all">
-          <Checkbox size="small" onChange={onSelectAll} /> all videos {data.total} total {selectLen > 0 && <span>{selectLen} selected</span>}
+          <Checkbox size="small" onChange={onSelectAll} /> all videos {data.total} total
+          {selectLen > 0 && <span>{selectLen} selected</span>}
         </div>
         <div>
           {selectLen > 0 && (
-            <IconButton color="secondary" onClick={openDelModal}>
-              <Icon name={'DeleteIcon'} />
+            <IconButton color="secondary" size="small" onClick={openDelModal}>
+              <DeleteForeverIcon fontSize="inherit" />
             </IconButton>
           )}
-          <Button className="btn" variant="text" color="inherit" endIcon={<Icon name={'ArrowDown'} />}>
+          <Button
+            size="small"
+            variant="text"
+            color="inherit"
+            endIcon={state.sort === 'ASC' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />}
+            onClick={() => handleSort('modifyTime')}
+          >
             Upload Date
           </Button>
-          <IconButton className="btn change-btn" onClick={switchList}>
-            <Icon name={state.listType ? 'CardIcon' : 'ListIcon'} />
+          <IconButton size="small" onClick={switchList}>
+            {state.listType ? <GridViewIcon fontSize="inherit" /> : <FormatListBulletedIcon fontSize="inherit" />}
           </IconButton>
         </div>
       </div>

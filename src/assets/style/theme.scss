@@ -70,6 +70,8 @@ $themes: (
   @include handleThemeVar($font-sizes, 'font-size');
   @include handleThemeVar($brand-color, 'brand-color');
   @include handleThemeVar($grey-color, 'grey-color');
+  --variant-textColor: var(--text-color-0);
+  --mui-palette-action-active: var(--text-color-0);
 }
 
 [data-dark] {

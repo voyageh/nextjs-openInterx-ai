@@ -6,14 +6,19 @@
   position: relative;
 
   .select-all {
-    font: var(--mui-font-body2);
-    color: var(--mui-palette-text-secondary);
+    font-size: 14px;
+    color: var(--text-color-0);
     display: flex;
     align-items: center;
+
+    & > span {
+      margin-left: 4px;
+    }
   }
 
   &__search {
-    padding-right: 20px;
+    padding-left: 20px;
+    padding-right: 8px;
     width: 100%;
     display: flex;
     align-items: center;
@@ -21,12 +26,19 @@
 
     .search-input {
       width: 70%;
+      height: 36px;
       display: flex;
       border: 1px solid rgba(var(--mui-palette-common-onBackgroundChannel) / 0.23);
       border-radius: 99px;
+
       .MuiAutocomplete-root {
         flex: 1;
       }
+
+      .MuiInputBase-root {
+        height: 36px;
+      }
+
       .MuiOutlinedInput-notchedOutline {
         border: none;
       }
@@ -36,7 +48,8 @@
   &__filter {
     height: 40px;
     margin-top: 6px;
-    padding-right: 12px;
+    padding-left: 15px;
+    padding-right: 14px;
     display: flex;
     align-items: center;
     position: relative;
@@ -81,6 +94,7 @@
     }
 
     .icon-left {
+      left: 2px;
       &::after {
         content: '';
         height: 100%;
@@ -125,7 +139,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-right: 12px;
+    padding-left: 8px;
+    padding-right: 14px;
 
     .btn {
       font-size: 14px;
@@ -160,6 +175,7 @@
     flex: 1;
     overflow: hidden;
     margin-top: 12px;
+    padding-left: 20px;
     padding-right: 5px;
 
     .video-row {
@@ -220,18 +236,20 @@
         }
 
         .video-name {
+          height: 36px;
           color: var(--text-color-0);
           font-size: 14px;
           font-weight: 500;
-          line-height: 22px;
-          word-break: break-all;
-          margin: 6px 0;
+          margin-top: 6px;
         }
 
         .video-date {
           color: var(--text-color-1);
           font-size: 12px;
           font-weight: 400;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
         .ant-skeleton-avatar-square {
@@ -250,8 +268,6 @@
             width: 126px;
             height: 80px;
             border-radius: 8px;
-            position: relative;
-            background: lightgray center / cover no-repeat;
           }
 
           .video-name {

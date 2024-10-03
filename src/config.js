@@ -2,18 +2,10 @@
 
 import { createTheme } from '@mui/material/styles'
 import { QueryClient } from '@tanstack/react-query'
-import { Roboto } from 'next/font/google'
 
-const roboto = Roboto({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--open-font-family',
-})
-
-const theme = createTheme({
+export const theme = createTheme({
   typography: {
-    fontFamily: roboto.style.fontFamily,
+    fontFamily: 'var(--open-font-family)',
   },
   cssVariables: {
     colorSchemeSelector: 'data',
@@ -110,7 +102,7 @@ const theme = createTheme({
           background: 'var(--grey-color-8)',
           color: 'var(--grey-color-0)',
           fontSize: '0.875rem',
-          borderRadius: '0.5rem',
+          borderRadius: '0.3rem',
           padding: '0.5rem',
         },
         arrow: {
@@ -134,6 +126,10 @@ const theme = createTheme({
   },
 })
 
-export default theme
-
-export const queryClient = new QueryClient()
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+    },
+  },
+})

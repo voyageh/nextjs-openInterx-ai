@@ -4,7 +4,7 @@ export class Http {
   constructor(baseURL, config) {
     this.config = config || {
       baseURL,
-      timeout: 3600000,
+      timeout: 60000,
       method: "GET",
       responseType: "json",
       headers: {

@@ -16,7 +16,6 @@ const initialState = {
   loadedSeconds: 0,
   played: 0,
   playedSeconds: 0,
-  position: 0,
   isFull: false,
   playbackRate: 1.0,
   volume: 0.5,
@@ -66,17 +65,15 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
   }, [])
 
   const onReady = (e) => {
-    console.log(e);
-    
     setLoading(false)
     if (getVideoInfo) {
       const videoName = e?.player?.player?.player?.videoTitle
       const duration = e?.player?.player?.player?.getDuration()
       const type = e?.player?.player.constructor?.name?.toUpperCase()
-      getVideoInfo({ url, videoName, duration, type })
+      getVideoInfo({ videoUrl: url, videoName, duration, type })
     }
     if (!isSeeked && seekTo) {
-      playerRef.current.seekTo(seekTo, 'seconds')
+      playerRef.current.seekTo(10, 'seconds')
       dispatch({ type: 'setState', payload: { playedSeconds: seekTo } })
       setIsSeeked(true) // 标记为已跳转
     }
@@ -123,7 +120,7 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
   }
 
   const changeTimeline = (_, value) => {
-    dispatch({ type: 'setState', payload: { position: value } })
+    dispatch({ type: 'setState', payload: { playedSeconds: value } })
   }
   const jumpTo = (_, value) => {
     playerRef.current.seekTo(value, 'seconds')
@@ -150,7 +147,7 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
         <div className="video-player__control-wrapper">
           <div className="timeline-container">
             <Slider
-              value={state.position}
+              value={state.playedSeconds}
               className="timeline"
               aria-label="time-indicator"
               size="small"

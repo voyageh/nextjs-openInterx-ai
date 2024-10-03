@@ -5,8 +5,8 @@ const store = (set) => ({
   selectedVideos: [],
   isNew: false,
   setDrag: (drag) => set({ drag }),
-  setSelectedVideos: (selectedVideos) => {
-    set({ selectedVideos })
+  setSelectedVideos: (selectedVideos, isNew = false) => {
+    set({ selectedVideos, isNew })
   },
 })
 
