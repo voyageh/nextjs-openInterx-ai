@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { IconButton, Input, InputAdornment, List, ListItem, ListItemText, Tooltip } from '@mui/material'
+import { useState, useRef } from 'react'
+import { IconButton, Input, InputAdornment, List, ListItem, ListItemText, Tooltip, Drawer } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import HistoryIcon from '@mui/icons-material/History'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
 import { useUniversalStore } from '@/store/universal'
 import Icon from '@/components/icon'
@@ -9,6 +10,7 @@ import ChatItem from './chat-item'
 import { send } from '@/api/video'
 import { useScrollAnchor } from '@/hooks/use-scroll-anchor'
 import { uniqueArray } from '@/utils/array'
+import ChatHistory from './chat-history'
 import './style/chat.scss'
 
 export default function ChatWindow() {
@@ -22,6 +24,7 @@ export default function ChatWindow() {
   const [msg, setMsg] = useState('')
   const [msgList, setMsgList] = useState([])
   const { scrollRef, messagesRef, visibilityRef } = useScrollAnchor()
+  const [open, setOpen] = useState(false)
 
   const onDragEnter = (e) => {
     e.preventDefault()
@@ -65,6 +68,7 @@ export default function ChatWindow() {
 
   const newChat = () => {
     setMsgList([])
+    setSelectedVideos([])
   }
 
   const sendMsg = async (e) => {
@@ -98,6 +102,14 @@ export default function ChatWindow() {
       })
     }
   }
+  
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return
+    }
+
+    setOpen(open)
+  }
 
   return (
     <div className="chat-wrapper">
@@ -126,12 +138,21 @@ export default function ChatWindow() {
         <div className="chat-title">
           <Input defaultValue="Unnamed session" disableUnderline />
         </div>
-        <Tooltip title="start conversation" arrow>
-          <IconButton onClick={newChat}>
-            <Icon name="NewChatIcon" />
-          </IconButton>
-        </Tooltip>
+
+        <div>
+          <Tooltip title="history" arrow>
+            <IconButton onClick={toggleDrawer(true)}>
+              <HistoryIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="start conversation" arrow>
+            <IconButton onClick={newChat}>
+              <Icon name="NewChatIcon" />
+            </IconButton>
+          </Tooltip>
+        </div>
       </div>
+
       <OverlayScrollbarsComponent ref={scrollRef} className="chat-content" defer options={{ scrollbars: { autoHide: 'leave' } }}>
         <div ref={messagesRef}>
           {msgList.map((item, index) => (
@@ -165,10 +186,15 @@ export default function ChatWindow() {
           }
         />
       </div>
+
       <div className={`chat-drag ${drag}`} onDrop={onDrop} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver}>
         <div className="drag-text">Drag the video here</div>
         <div className="drag-tips">Please drag the video into this area. A new conversation will begin once the drag is complete</div>
       </div>
+
+      <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
+        <ChatHistory />
+      </Drawer>
     </div>
   )
 }

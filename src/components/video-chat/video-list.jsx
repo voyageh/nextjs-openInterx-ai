@@ -16,6 +16,8 @@ import {
   DialogActions,
   Select,
   MenuItem,
+  Popover,
+  LinearProgress,
 } from '@mui/material'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
@@ -65,7 +67,6 @@ const initialState = {
   value: '',
   options: [],
   type: 'KEYCLIP',
-  tags: [],
   tagLoading: true,
   selectedTag: 'All',
   checkedList: {},
@@ -76,6 +77,7 @@ const initialState = {
   size: 3,
   span: 0,
   showDel: false,
+  anchorPosition: null,
 }
 
 function reducer(state, action) {
@@ -107,11 +109,11 @@ const VideoList = () => {
   const uploadRef = useRef(null)
   const videoRef = useRef(null)
 
-  useEffect(() => {
-    queryVideoTag().then((r) => {
-      dispatch({ type: 'setState', payload: { tags: ['All', ...r.tags] } })
-    })
-  }, [])
+  const { data: tags } = useQuery({
+    queryKey: ['video-tags'],
+    queryFn: () => queryVideoTag(),
+    initialData: [],
+  })
 
   const { isFetching, data, refetch } = useQuery({
     queryKey: ['video-list', state.value, state.selectedTag, state.sortFileds, state.sort],
@@ -240,6 +242,16 @@ const VideoList = () => {
     setSelectedVideos(sVideos, true)
   }
 
+  const openOperation = (e) => {
+    e.stopPropagation()
+    const { x, y, height } = e.target.getBoundingClientRect()
+    dispatch({ type: 'setState', payload: { anchorPosition: { left: x, top: y + height } } })
+  }
+
+  const closeOperation = () => {
+    dispatch({ type: 'setState', payload: { anchorPosition: null } })
+  }
+
   const onDragEnd = (e) => {
     e.preventDefault()
     setDrag('')
@@ -276,7 +288,7 @@ const VideoList = () => {
         onClick={() => playerVideo(item.videoUrl)}
       >
         <div className="video-cover" style={{ backgroundImage: `url(${item.videoCoverImgUrl || '1.png'})` }}>
-          <div className="video-cover__mask text">{item.duration}</div>
+          <div className="video-cover__mask text">{item.videoTime || '04:49'}</div>
           <Checkbox
             checked={!!state.checkedList[item.id]}
             value={item.id}
@@ -286,18 +298,28 @@ const VideoList = () => {
             onChange={() => onSelectVideo(item)}
           />
         </div>
-        <div className="video-name ellipsis-2-lines">{item.videoName}</div>
-        {state.listType === 'list' && <div className="text">{item.videoTime}</div>}
-        <div className="video-date">
-          <div>{item.createTime}</div>
-          <div>
-            <IconButton size="small" onClick={(e) => startConversation(e, item)}>
-              <Icon name="NewChatIcon" />
-            </IconButton>
-            <IconButton size="small">
-              <MoreHorizIcon fontSize="inherit" />
-            </IconButton>
+        <div className="video-info">
+          <div className="video-basic">
+            <div className="video-name ellipsis-2-lines">{item.videoName}</div>
+            {state.listType === 'list' && <div className="text">{item.videoTime || '04:09'}</div>}
+            <div className="video-date-wrapper">
+              <div className="video-date">{item.createTime.replace(/\s\d{2}:\d{2}:\d{2}$/, '')}</div>
+              <div>
+                <IconButton size="small" onClick={(e) => startConversation(e, item)}>
+                  <Icon name="NewChatIcon" />
+                </IconButton>
+                <IconButton size="small" onClick={openOperation}>
+                  <MoreHorizIcon fontSize="inherit" />
+                </IconButton>
+              </div>
+            </div>
           </div>
+          {state.listType === 'list' && (
+            <div className="video-progress">
+              <div className="w-1"></div>
+              <div className="w-80"></div>
+            </div>
+          )}
         </div>
       </Grid>
     ),
@@ -352,7 +374,7 @@ const VideoList = () => {
           }}
           modules={[Navigation]}
         >
-          {state.tags.map((tag) => (
+          {tags.map((tag) => (
             <SwiperSlide key={tag} style={{ width: 'auto' }}>
               <div className={`video-tag ${tag === state.selectedTag ? 'active' : ''}`} onClick={() => handleSelectTag(tag)}>
                 {tag}
@@ -469,9 +491,16 @@ const VideoList = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Popover anchorReference="anchorPosition" anchorPosition={state.anchorPosition} open={Boolean(state.anchorPosition)} onClose={closeOperation}>
+        <MenuItem>Download</MenuItem>
+        <MenuItem>Rename</MenuItem>
+        <MenuItem>Delete</MenuItem>
+      </Popover>
     </div>
   )
 }
+
 const top100Films = [
   { title: 'The Shawshank Redemption', year: 1994 },
   { title: 'The Godfather', year: 1972 },

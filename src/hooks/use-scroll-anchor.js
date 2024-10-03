@@ -18,8 +18,6 @@ export const useScrollAnchor = () => {
   }, [])
 
   useEffect(() => {
-    console.log(isAtBottom, isVisible)
-
     if (messagesRef.current) {
       if (isAtBottom && !isVisible) {
         messagesRef.current.scrollIntoView({
@@ -72,7 +70,7 @@ export const useScrollAnchor = () => {
         observer.disconnect()
       }
     }
-  })
+  }, [])
 
   return {
     messagesRef,

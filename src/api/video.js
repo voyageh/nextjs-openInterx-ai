@@ -1,10 +1,10 @@
 import http from '@/utils/http'
 
 export const queryVideoTag = () => {
-  return http.request('/serve/video/getVideoTag')
+  return http.request('/serve/video/getVideoTag').then((res) => res.tags)
 }
 
-export const queryVideoList = (data) => {  
+export const queryVideoList = (data) => {
   return http.request('/serve/video/search', {
     method: 'POST',
     data,
@@ -43,8 +43,9 @@ export const send = (data) => {
   })
 }
 
-export const getChatHistory = () => {
-  return http.request('/serve/video/getChatHistory', {
+export const getChatHistory = (data) => {
+  return http.request('/serve/video/queryHisChatMsg', {
     method: 'post',
+    data,
   })
 }

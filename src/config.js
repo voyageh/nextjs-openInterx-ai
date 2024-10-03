@@ -110,19 +110,21 @@ export const theme = createTheme({
         },
       },
     },
-
-    MuiSkeleton: {
-      styleOverrides: {
-        root: {
-          background: 'var(--bg-color-1)',
+    MuiPopover:{
+      styleOverrides:{
+        paper:{
+          background: 'var(--bg-color-0)',
         },
-        wave: {
-          '&::after': {
-            // background: 'var(--bg-color-2)',
-          },
-        },
-      },
+      }
     },
+    MuiMenuItem:{
+      styleOverrides:{
+        root:{
+          color: 'var(--text-color-0)',
+          fontSize:'0.875rem'
+        }
+      }
+    }
   },
 })
 
