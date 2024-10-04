@@ -268,8 +268,8 @@ const VideoList = () => {
     setDrag('')
   }
 
-  const playerVideo = (url) => {
-    videoRef.current.open(url)
+  const playerVideo = (url, seekTo) => {
+    videoRef.current.open(url, seekTo)
   }
 
   const openDelModal = () => {
@@ -290,15 +290,12 @@ const VideoList = () => {
 
   const renderItem = useCallback(
     (item) => (
-      <Grid
-        className="video-item"
-        size={state.span}
-        draggable
-        onDragStart={(e) => onDragStart(e, item)}
-        onDragEnd={onDragEnd}
-        onClick={() => playerVideo(item.videoUrl)}
-      >
-        <div className="video-cover" style={{ backgroundImage: `url(${item.videoCoverImgUrl || '1.png'})` }}>
+      <Grid className="video-item" size={state.span} draggable onDragStart={(e) => onDragStart(e, item)} onDragEnd={onDragEnd}>
+        <div
+          className="video-cover"
+          style={{ backgroundImage: `url(${item.videoCoverImgUrl || '1.png'})` }}
+          onClick={() => playerVideo(item.videoUrl)}
+        >
           <div className="video-cover__mask text">{item.videoTime || '04:49'}</div>
           <Checkbox
             checked={!!state.checkedList[item.id]}
@@ -328,7 +325,7 @@ const VideoList = () => {
           {state.listType === 'list' && (
             <div className="video-progress">
               {Array.from({ length: 20 }, () => Math.floor(Math.random() * 100) + 1).map((position, i) => (
-                <div key={i} className="progress-keyClip" style={{ left: `${position}%` }}></div>
+                <div key={i} className="progress-keyClip" style={{ left: `${position}%` }} onClick={() => playerVideo(item.videoUrl, position)}></div>
               ))}
             </div>
           )}

@@ -185,7 +185,6 @@
         margin-bottom: 14px;
         padding-left: 5px;
         padding-right: 5px;
-        cursor: pointer;
 
         &:first-child {
           padding-left: 0;
@@ -210,6 +209,7 @@
           overflow: hidden;
           will-change: background-image;
           flex-shrink: 0;
+          cursor: pointer;
 
           .cover-checkbox {
             position: absolute;
@@ -248,6 +248,7 @@
         .video-date-wrapper {
           display: flex;
           align-items: center;
+          justify-content: space-between;
         }
 
         .video-date {
@@ -295,6 +296,7 @@
               position: relative;
 
               .progress-keyClip {
+                cursor: pointer;
                 position: absolute;
                 width: 2px;
                 height: 100%;

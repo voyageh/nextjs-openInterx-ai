@@ -73,8 +73,7 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
       getVideoInfo({ videoUrl: url, videoName, duration, type })
     }
     if (!isSeeked && seekTo) {
-      playerRef.current.seekTo(10, 'seconds')
-      dispatch({ type: 'setState', payload: { playedSeconds: seekTo } })
+      playerRef.current.seekTo(seekTo)
       setIsSeeked(true) // 标记为已跳转
     }
   }
