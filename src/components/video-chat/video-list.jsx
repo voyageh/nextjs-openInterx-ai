@@ -325,7 +325,14 @@ const VideoList = () => {
           {state.listType === 'list' && (
             <div className="video-progress">
               {Array.from({ length: 20 }, () => Math.floor(Math.random() * 100) + 1).map((position, i) => (
-                <Tooltip key={i} title={<img src="1.png" style={{ width: '10rem', height: '8rem' }} />} placement="top">
+                <Tooltip
+                  classes={{
+                    tooltip: 'video-keyClip-thumb',
+                  }}
+                  key={i}
+                  title={<img src="1.png" style={{ width: '10rem', height: '8rem' }} />}
+                  placement="top"
+                >
                   <div className="progress-keyClip" style={{ left: `${position}%` }} onClick={() => playerVideo(item.videoUrl, position / 100)} />
                 </Tooltip>
               ))}
