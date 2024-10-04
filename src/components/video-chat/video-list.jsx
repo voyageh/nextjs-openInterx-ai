@@ -325,7 +325,12 @@ const VideoList = () => {
           {state.listType === 'list' && (
             <div className="video-progress">
               {Array.from({ length: 20 }, () => Math.floor(Math.random() * 100) + 1).map((position, i) => (
-                <div key={i} className="progress-keyClip" style={{ left: `${position}%` }} onClick={() => playerVideo(item.videoUrl, position)}></div>
+                <div
+                  key={i}
+                  className="progress-keyClip"
+                  style={{ left: `${position}%` }}
+                  onClick={() => playerVideo(item.videoUrl, position / 100)}
+                ></div>
               ))}
             </div>
           )}
