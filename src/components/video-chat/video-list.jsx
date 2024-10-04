@@ -70,7 +70,7 @@ const initialState = {
   tagLoading: true,
   selectedTag: 'All',
   checkedList: {},
-  listType: '',
+  listType: 'card',
   sort: 'DESC',
   sortFileds: ['modifyTime'],
   width: 0,
@@ -95,7 +95,7 @@ function reducer(state, action) {
       }
       return { ...state, checkedList: { ...state.checkedList, [action.payload.id]: action.payload } }
     case 'setListType':
-      let listType = state.listType === '' ? 'list' : ''
+      let listType = action.payload
       const size = calcSize(state.width, listType)
       const span = 24 / size
       return { ...state, listType, size, span }
@@ -116,7 +116,7 @@ const VideoList = () => {
   })
 
   const { isFetching, data, refetch } = useQuery({
-    queryKey: ['video-list', state.value, state.selectedTag, state.sortFileds, state.sort],
+    queryKey: ['video-list', state.selectedTag, state.sortFileds, state.sort],
     queryFn: () =>
       queryVideoList({
         searchValue: state.value,
@@ -138,7 +138,17 @@ const VideoList = () => {
   }
 
   const handleSearch = (_, newValue) => {
-    dispatch({ type: 'setState', payload: { value: newValue } })
+    const obj = { value: newValue }
+
+    if (!newValue) {
+      dispatch({ type: 'setListType', payload: 'card' })
+      console.log('card')
+    } else if (state.type === 'KEYCLIP') {
+      dispatch({ type: 'setListType', payload: 'list' })
+    }
+
+    dispatch({ type: 'setState', payload: obj })
+    refetch()
   }
 
   const hanldeQuerySug = (_, newValue) => {
@@ -187,7 +197,8 @@ const VideoList = () => {
   }
 
   const switchList = () => {
-    dispatch({ type: 'setListType' })
+    const listType = state.listType === 'card' ? 'list' : 'card'
+    dispatch({ type: 'setListType', payload: listType })
   }
 
   const onResize = useCallback(({ width }) => {
@@ -316,8 +327,9 @@ const VideoList = () => {
           </div>
           {state.listType === 'list' && (
             <div className="video-progress">
-              <div className="w-1"></div>
-              <div className="w-80"></div>
+              {Array.from({ length: 20 }, () => Math.floor(Math.random() * 100) + 1).map((position, i) => (
+                <div key={i} className="progress-keyClip" style={{ left: `${position}%` }}></div>
+              ))}
             </div>
           )}
         </div>
