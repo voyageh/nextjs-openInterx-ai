@@ -116,7 +116,7 @@ const VideoList = () => {
   })
 
   const { isFetching, data, refetch } = useQuery({
-    queryKey: ['video-list', state.selectedTag, state.sortFileds, state.sort],
+    queryKey: ['video-list', state.value, state.selectedTag, state.sortFileds, state.sort],
     queryFn: () =>
       queryVideoList({
         searchValue: state.value,
@@ -142,13 +142,10 @@ const VideoList = () => {
 
     if (!newValue) {
       dispatch({ type: 'setListType', payload: 'card' })
-      console.log('card')
     } else if (state.type === 'KEYCLIP') {
       dispatch({ type: 'setListType', payload: 'list' })
     }
-
     dispatch({ type: 'setState', payload: obj })
-    refetch()
   }
 
   const hanldeQuerySug = (_, newValue) => {

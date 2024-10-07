@@ -23,6 +23,7 @@ export const upload = (data, onUploadProgress) => {
     data,
     method: 'post',
     timeout: 1800000,
+    onUploadProgress,
     headers: {
       'Content-Type': 'multipart/form-data',
     },

@@ -78,6 +78,11 @@ const UploadVideo = (_, ref) => {
     urlInfo[info.url] = info
   }
 
+  const handleUploadProgress = (e) => {
+    const progress = Math.round((e.loaded * 100) / e.total)
+    console.log('progress', e)
+  }
+  
   const handleUpload = async () => {
     const requestList = []
 
@@ -86,7 +91,7 @@ const UploadVideo = (_, ref) => {
         limit(() => {
           const formData = new FormData()
           formData.append('file', file)
-          return upload(formData)
+          return upload(formData, handleUploadProgress)
         })
       )
     })
