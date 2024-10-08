@@ -1,8 +1,9 @@
 import http from '@/utils/http'
 
-const login = (token) => {
-  return http.request('http://192.168.1.103:8081/auth/customer/login', {
+const login = (token, baseURL) => {
+  return http.request('/auth/customer/login', {
     params: { token },
+    baseURL,
   })
 }
 

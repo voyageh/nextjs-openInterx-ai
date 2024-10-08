@@ -4,6 +4,7 @@ import { login } from '@/api/user'
 
 const whiteList = ['/', '/sample-video'] // 白名单页面
 
+const backend = process.env.BACKEND_URL
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: '/login',
@@ -13,14 +14,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, account }) {
       if (account?.provider === 'google') {
-        // 获取token
-        const r = await login(account?.access_token)
+        const r = await login(account?.access_token, backend)
         return { ...token, accessToken: r.token }
       }
       return token
     },
 
-    async session({ session, token, ...r }) {
+    async session({ session, token }) {
       session.accessToken = token.accessToken
       return session
     },

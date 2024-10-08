@@ -1,10 +1,15 @@
 import { useState, useRef, useReducer, useEffect } from 'react'
 import ReactPlayer from 'react-player'
-import { Spin, Slider as Slider2 } from 'antd'
-import { Slider } from '@mui/material'
-import { LoadingOutlined } from '@ant-design/icons'
+import { CircularProgress, Slider } from '@mui/material'
+import PlayArrowIcon from '@mui/icons-material/PlayArrow'
+import PauseIcon from '@mui/icons-material/Pause'
+import DownloadIcon from '@mui/icons-material/Download'
+import VolumeUpIcon from '@mui/icons-material/VolumeUp'
+import VolumeOffIcon from '@mui/icons-material/VolumeOff'
+import PictureInPictureAltIcon from '@mui/icons-material/PictureInPictureAlt'
+import FullscreenIcon from '@mui/icons-material/Fullscreen'
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit'
 import screenfull from 'screenfull'
-import Icon from '@/components/icon'
 
 import './style/index.scss'
 
@@ -97,7 +102,7 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
   }
 
   // 调节音量
-  const handleVolumeChange = (value) => {
+  const handleVolumeChange = (_, value) => {
     if (isNaN(value)) {
       return
     }
@@ -185,7 +190,7 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
           <div className="video-controls">
             <div className="video-controls__box">
               <div className="video-btn play" onClick={() => handlePlayPause()}>
-                {state.playing ? <Icon name="PauseIcon" /> : <Icon name="PlayIcon" />}
+                {state.playing ? <PauseIcon /> : <PlayArrowIcon />}
               </div>
               <div className="video-time">
                 {formatDuration(state.playedSeconds)}
@@ -193,26 +198,30 @@ export default function VideoPlayer({ url, getVideoInfo, seekTo, controls = true
                 {formatDuration(state.duration)}
               </div>
               <div className="video-btn">
-                <Icon name="DownloadIcon" />
+                <DownloadIcon />
               </div>
               <div className="video-btn" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-                <div onClick={handleToggleMuted}>{!state.muted ? <Icon name="SoundIcon" /> : <Icon name="MuteIcon" />}</div>
-                <div className={`volume-slider ${show ? 'show' : ''}`}>
-                  <div className="volume-value">{Math.round(state.volume * 100)}</div>
-                  <Slider2 vertical min={0} max={1} value={state.volume} step={0.01} tooltip={{ formatter: null }} onChange={handleVolumeChange} />
+                <div onClick={handleToggleMuted}>{!state.muted ? <VolumeUpIcon /> : <VolumeOffIcon />}</div>
+                <div className={`volume-slider-warpper ${show ? 'show' : ''}`}>
+                  <div className="volume-slider-main">
+                    <div className="volume-value">{Math.round(state.volume * 100)}</div>
+                    <div className="volume-slider">
+                      <Slider orientation="vertical" min={0} max={1} step={0.01} value={state.volume} onChange={handleVolumeChange} />
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="video-btn" onClick={handlePIP}>
-                <Icon name="FloatIcon" />
+                <PictureInPictureAltIcon />
               </div>
               <div className="video-btn" onClick={handleFullscreen}>
-                {state.isFull ? <Icon name="CloseFull" /> : <Icon name="FullScreen" />}
+                {state.isFull ? <FullscreenExitIcon /> : <FullscreenIcon />}
               </div>
             </div>
           </div>
         </div>
       )}
-      <Spin className="video-player__loading" indicator={<LoadingOutlined />} spinning={loading} />
+      {loading && <CircularProgress className="video-player__loading" size={24} />}
     </div>
   )
 }

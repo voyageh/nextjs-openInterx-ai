@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 
-export async function middleware(request, response) {
-  if (request.nextUrl.pathname.startsWith('/back')) {
-    const session = await auth()
-    const modifiedRequest = request.clone()
-    modifiedRequest.headers.set('authorization', session?.accessToken)
-    return NextResponse.next(modifiedRequest)
+export default async function (request, response) {
+  if (request.nextUrl.pathname.startsWith('/backend')) {
+    const session = await auth()    
+    const headers = new Headers(request.headers)
+    headers.set('Authorization', `Bearer ${session?.accessToken}`)
+    return NextResponse.rewrite(request.nextUrl, {
+      headers,
+    })
   }
-
-  const res = await auth(request, response)  
-  return res
+  return auth(request, response)
 }
 
 export const config = {

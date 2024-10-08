@@ -5,7 +5,6 @@
   background: #000;
 
   &__loading {
-    color: #fff;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -39,27 +38,30 @@
         width: 100%;
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 20px;
         padding-bottom: 10px;
 
         .video-btn {
           color: rgba(255, 255, 255, 0.7);
-          font-size: 24px;
           line-height: 0;
           cursor: pointer;
           position: relative;
 
-          .volume-slider {
+          .volume-slider-warpper {
             position: absolute;
-            bottom: 44px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            border-radius: 8px;
-            background: #232429;
-            box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.3), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
-            padding: 15px 10px;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            transition: display 0.3s ease-in-out;
+            display: none;
+
+            .volume-slider-main {
+              background: #232429;
+              box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.3), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+              border-radius: 4px;
+              padding: 15px 10px;
+              margin-bottom: 20px;
+            }
 
             .volume-value {
               font-size: 18px;
@@ -68,37 +70,13 @@
               margin-bottom: 10px;
             }
 
-            .ant-slider {
-              height: 100px;
-            }
-            .ant-slider-rail {
-              background-color: #35363c;
-            }
-            .ant-slider-track {
-              background-color: #bfbaff;
-              border-radius: 10px;
-            }
-            .ant-slider-handle {
-              &:hover::after {
-                transform: scale(1.2);
-                inset-block-start: 0;
-              }
-
-              &::after {
-                height: 5px;
-                width: 16px;
-                background-color: #bfbaff;
-                box-shadow: none;
-                border-radius: 5px;
-                outline: none;
-                inset-inline-start: -3px;
-                inset-block-start: 1px;
-                transition: transform 0.3s ease;
-              }
+            .volume-slider {
+              height: 120px;
             }
           }
-          .volume-slider.show {
-            opacity: 1;
+
+          .volume-slider-warpper.show {
+            display: initial;
           }
         }
 

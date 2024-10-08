@@ -1,5 +1,5 @@
 import { useState, forwardRef, useImperativeHandle } from 'react'
-import { Modal } from 'antd'
+import { Dialog, DialogContent } from '@mui/material'
 import VideoPlayer from '.'
 import './style/modal.scss'
 
@@ -26,10 +26,10 @@ export default forwardRef(function VideoModal(_, ref) {
   )
 
   return (
-    <Modal className="video-modal" width="60%" footer={null} centered={true} closable={false} open={show} onCancel={close} destroyOnClose={true}>
-      <div style={{ width: '100%', height: '34vw' }}>
+    <Dialog className="video-modal" open={show} maxWidth={false} onClose={close} disableRestoreFocus>
+      <DialogContent>
         <VideoPlayer url={url} seekTo={seekTo} />
-      </div>
-    </Modal>
+      </DialogContent>
+    </Dialog>
   )
 })

@@ -1,7 +1,8 @@
 'use client'
 
 import { Tooltip, IconButton } from '@mui/material'
-import IconSvg from '@/components/icon/index2'
+import LightModeIcon from '@mui/icons-material/LightMode'
+import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useColorScheme } from '@mui/material/styles'
 
 export default function ThemeSwitch() {
@@ -21,8 +22,8 @@ export default function ThemeSwitch() {
         {!calculatedMode
           ? null
           : {
-              light: <IconSvg name="root/dark" />,
-              dark: <IconSvg name="root/light" />,
+              light: <DarkModeIcon />,
+              dark: <LightModeIcon />,
             }[calculatedMode]}
       </IconButton>
     </Tooltip>

@@ -1,10 +1,8 @@
 .video-modal {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.video-modal .ant-modal-content {
-  padding: 0;
-  background-color: transparent;
-  box-shadow: none;
+  .MuiDialogContent-root {
+    width: 60vw;
+    height: 34vw;
+    padding: 0;
+    overflow: hidden;
+  }
 }

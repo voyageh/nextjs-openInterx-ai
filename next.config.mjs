@@ -35,8 +35,8 @@ const nextConfig = {
   rewrites() {
     return [
       {
-        source: '/back/:path*',
-        destination: 'http://34.168.248.42:18059/:path*',
+        source: '/backend/:path*',
+        destination:  process.env.BACKEND_URL + '/:path*',
       },
     ]
   },
