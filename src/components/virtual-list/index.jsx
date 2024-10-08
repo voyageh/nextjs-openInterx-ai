@@ -1,6 +1,5 @@
 import { useEffect, useRef, memo, Fragment } from 'react'
 import PropTypes from 'prop-types'
-import { Empty } from 'antd'
 import EmptyIcon from '@/assets/images/empty.svg'
 import { useOverlayScrollbars } from 'overlayscrollbars-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -87,7 +86,10 @@ const VirtualList = (props) => {
         </Wrapper>
         {!loading && data.length === 0 && (
           <div className="virtual-list__emty">
-            <Empty image={<EmptyIcon />} description={EmptyDes} />
+            <div className="empty-icon">
+              <EmptyIcon />
+            </div>
+            <div className="empty-description">{EmptyDes}</div>
           </div>
         )}
       </div>

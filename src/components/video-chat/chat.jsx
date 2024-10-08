@@ -1,11 +1,14 @@
-import { useState, useRef } from 'react'
-import { IconButton, Input, InputAdornment, List, ListItem, ListItemText, Tooltip, Drawer } from '@mui/material'
+import { useState } from 'react'
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
+import { IconButton, Input, InputAdornment, List, ListItem, ListItemText, Tooltip, Popover } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import HistoryIcon from '@mui/icons-material/History'
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
+import AttachFileIcon from '@mui/icons-material/AttachFile'
+import SendIcon from '@mui/icons-material/Send'
+import NewChatIcon from '@/assets/images/new-chat.svg'
 import { useUniversalStore } from '@/store/universal'
-import Icon from '@/components/icon'
+import { SvgIcon } from '@mui/material'
 import ChatItem from './chat-item'
 import { send } from '@/api/video'
 import { useScrollAnchor } from '@/hooks/use-scroll-anchor'
@@ -14,17 +17,20 @@ import ChatHistory from './chat-history'
 import './style/chat.scss'
 
 export default function ChatWindow() {
-  const [show, setShow] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [msgList, setMsgList] = useState([])
+  const [anchorEl, setAnchorEl] = useState(null)
+  const open2 = Boolean(anchorEl)
+  
   const [selectedVideos, setSelectedVideos, drag, setDrag] = useUniversalStore((state) => [
     state.selectedVideos,
     state.setSelectedVideos,
     state.drag,
     state.setDrag,
   ])
-  const [msg, setMsg] = useState('')
-  const [msgList, setMsgList] = useState([])
   const { scrollRef, messagesRef, visibilityRef } = useScrollAnchor()
-  const [open, setOpen] = useState(false)
+  const enableSend = msg && !loading
 
   const onDragEnter = (e) => {
     e.preventDefault()
@@ -50,11 +56,10 @@ export default function ChatWindow() {
     const list = JSON.parse(data)
     const newList = uniqueArray([...selectedVideos, ...list], 'id')
     setSelectedVideos(newList)
-    setShow(true)
   }
 
-  const showList = () => {
-    setShow(!show)
+  const showList = (e) => {
+    setAnchorEl(e.currentTarget)
   }
 
   const onDelete = (id) => {
@@ -73,6 +78,7 @@ export default function ChatWindow() {
 
   const sendMsg = async (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
+      setLoading(true)
       setMsgList([
         ...msgList,
         {
@@ -100,16 +106,14 @@ export default function ChatWindow() {
         const newMsgList = pre.slice(0, -1)
         return [...newMsgList, r]
       })
+      setLoading(false)
     }
   }
-  
-  const toggleDrawer = (open) => (event) => {
-    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-      return
-    }
 
-    setOpen(open)
+  const handleClose = () => {
+    setAnchorEl(null)
   }
+
 
   return (
     <div className="chat-wrapper">
@@ -118,22 +122,6 @@ export default function ChatWindow() {
           <div className="selected-video__count" onClick={showList}>
             <span className="text">{selectedVideos.length} videos</span> <KeyboardArrowDownIcon color="inherit" fontSize="small" />
           </div>
-          <List className={`selected-video__list ${show ? 'show' : ''}`}>
-            {selectedVideos.map((item) => (
-              <ListItem
-                key={item.id}
-                className="selected-video__list__item"
-                secondaryAction={
-                  <IconButton size="small" edge="end" aria-label="delete" onClick={() => onDelete(item.id)}>
-                    <CloseIcon fontSize="inherit" color="inherit" />
-                  </IconButton>
-                }
-              >
-                <div className="cover" style={{ background: `url(${item.videoCoverImgUrl}) var(--bg-color-0) 50% / cover no-repeat` }} />
-                <ListItemText className="ellipsis-2-lines" secondary={item.videoName} />
-              </ListItem>
-            ))}
-          </List>
         </div>
         <div className="chat-title">
           <Input defaultValue="Unnamed session" disableUnderline />
@@ -141,13 +129,13 @@ export default function ChatWindow() {
 
         <div>
           <Tooltip title="history" arrow>
-            <IconButton onClick={toggleDrawer(true)}>
+            <IconButton onClick={showList}>
               <HistoryIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="start conversation" arrow>
             <IconButton onClick={newChat}>
-              <Icon name="NewChatIcon" />
+              <NewChatIcon />
             </IconButton>
           </Tooltip>
         </div>
@@ -172,15 +160,23 @@ export default function ChatWindow() {
           disableUnderline
           startAdornment={
             <InputAdornment position="start">
-              <IconButton disableRipple>
-                <Icon name="Attachment" className="attachment-icon" />
+              <IconButton disableRipple size="medium">
+                <AttachFileIcon fontSize="inherit" />
               </IconButton>
             </InputAdornment>
           }
           endAdornment={
             <InputAdornment position="start">
-              <IconButton disableRipple onClick={sendMsg}>
-                <Icon name="SendIcon" className="send-icon" />
+              <IconButton className="send-icon" disableRipple onClick={sendMsg}>
+                <SvgIcon>
+                  <defs>
+                    <linearGradient id="send-color" x1="4" y1="6.49951" x2="36.5" y2="18.9995" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#7F72DB" />
+                      <stop offset="1" stopColor="#5DF3FC" />
+                    </linearGradient>
+                  </defs>
+                  <SendIcon sx={{ fill: enableSend ? 'url(#send-color)' : 'currentcolor' }} />
+                </SvgIcon>
               </IconButton>
             </InputAdornment>
           }
@@ -192,9 +188,37 @@ export default function ChatWindow() {
         <div className="drag-tips">Please drag the video into this area. A new conversation will begin once the drag is complete</div>
       </div>
 
-      <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
-        <ChatHistory />
-      </Drawer>
+      <Popover
+        open={open2}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        sx={{
+          marginTop: '0.5rem',
+        }}
+      >
+        <OverlayScrollbarsComponent className="selected-video-thumb-scroll">
+          <List className="selected-video-thumb">
+            {selectedVideos.map((item) => (
+              <ListItem
+                key={item.id}
+                className="selected-video-thumb__item"
+                secondaryAction={
+                  <IconButton size="small" edge="end" aria-label="delete" onClick={() => onDelete(item.id)}>
+                    <CloseIcon fontSize="inherit" color="inherit" />
+                  </IconButton>
+                }
+              >
+                <div className="cover" style={{ background: `url(${item.videoCoverImgUrl}) var(--bg-color-0) 50% / cover no-repeat` }} />
+                <ListItemText className="ellipsis-2-lines" secondary={item.videoName} />
+              </ListItem>
+            ))}
+          </List>
+        </OverlayScrollbarsComponent>
+      </Popover>
     </div>
   )
 }

@@ -25,25 +25,20 @@
       gap: 15px;
 
       & > a {
+        font-size: var(--font-size-8);
+        color: var(--text-color-1);
         padding: 6px;
         border-radius: 8px;
+        line-height: 0;
 
         &:hover {
           background-color: rgba(var(--mui-palette-action-activeChannel) / var(--mui-palette-action-hoverOpacity));
         }
-        
-        .menu-icon {
-          font-size: var(--font-size-8);
-          color: var(--text-color-1);
-        }
-        
       }
+      
       & > a.active {
+        color: var(--text-color-0);
         background: var(--brand-color-1);
-
-        .menu-icon {
-          color: var(--text-color-0);
-        }
       }
     }
 

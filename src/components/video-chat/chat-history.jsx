@@ -2,7 +2,7 @@ import { useState, forwardRef, useImperativeHandle } from 'react'
 import { List, ListItem, ListItemButton, ListItemText } from '@mui/material'
 import { useUniversalStore } from '@/store/universal'
 import { useQuery } from '@tanstack/react-query'
-import { getChatHistory } from '@/api/video'
+import { getChatHistoryList } from '@/api/video'
 
 export default forwardRef(function (_, ref) {
   const selectedVideos = useUniversalStore((state) => state.selectedVideos)
@@ -11,10 +11,9 @@ export default forwardRef(function (_, ref) {
 
   const { data } = useQuery({
     queryKey: ['video-list', selectedVideos],
-    queryFn: () => getChatHistory(ids),
+    queryFn: () => getChatHistoryList(),
     initialData: {
-      chatResponseList: [],
-      total: 0,
+      chatTitleResponseList: [],
     },
     initialDataUpdatedAt: 0,
     staleTime: 60 * 1000,
@@ -32,10 +31,10 @@ export default forwardRef(function (_, ref) {
 
   return (
     <List>
-      {data?.chatResponseList?.map((item, index) => (
+      {data?.chatTitleResponseList?.map((item, index) => (
         <ListItem key={index} disablePadding>
           <ListItemButton>
-            <ListItemText primary={'jjnsdlklk'} />
+            <ListItemText primary={item.title} />
           </ListItemButton>
         </ListItem>
       ))}

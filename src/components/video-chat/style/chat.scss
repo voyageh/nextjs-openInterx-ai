@@ -29,40 +29,6 @@
           font-weight: 400;
         }
       }
-
-      &__list {
-        width: 300px;
-        border-radius: 8px;
-        background: var(--bg-color-1);
-        box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.3), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
-        position: absolute;
-        display: none;
-        transition: opacity 0.3s ease-in-out;
-        padding: 4px 0;
-        z-index: 99;
-
-        &.show {
-          display: initial;
-        }
-
-        &__item {
-          gap: 10px;
-          .cover {
-            width: 80px;
-            min-height: 44px;
-            border-radius: 4px;
-            flex: none;
-          }
-
-          .name {
-            color: var(--text-color-0);
-            font-size: var(--font-size-1);
-            font-weight: 400;
-            word-break: break-all;
-            line-height: 1.5;
-          }
-        }
-      }
     }
 
     .chat-title {
@@ -107,12 +73,8 @@
         color: var(--text-color-3);
       }
 
-      .attachment-icon,
       .send-icon {
-        cursor: pointer;
-      }
-
-      .send-icon {
+        font-size: 20px;
         color: var(--bg-color-4);
       }
     }
@@ -157,6 +119,40 @@
       font-size: var(--font-size-1);
       line-height: 20px; /* 142.857% */
       font-weight: 400;
+    }
+  }
+}
+
+.selected-video-thumb-scroll {
+  width: 300px;
+  max-height: 300px;
+  
+  .os-scrollbar-vertical .os-scrollbar-handle {
+    height: 60px;
+    background-color: var(--grey-color-4);
+  }
+
+  .selected-video-thumb {
+    border-radius: 8px;
+    background: var(--bg-color-1);
+    padding: 4px 0;
+
+    &__item {
+      gap: 10px;
+      .cover {
+        width: 80px;
+        min-height: 44px;
+        border-radius: 4px;
+        flex: none;
+      }
+
+      .name {
+        color: var(--text-color-0);
+        font-size: var(--font-size-1);
+        font-weight: 400;
+        word-break: break-all;
+        line-height: 1.5;
+      }
     }
   }
 }

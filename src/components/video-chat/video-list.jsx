@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useReducer, useCallback, useEffect } from 'react'
+import { useRef, useReducer, useCallback } from 'react'
 import {
   Autocomplete,
   TextField,
@@ -17,7 +17,6 @@ import {
   Select,
   MenuItem,
   Popover,
-  LinearProgress,
 } from '@mui/material'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
@@ -30,7 +29,8 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import GridViewIcon from '@mui/icons-material/GridView'
-import Icon from '@/components/icon'
+import NewChatIcon from '@/assets/images/new-chat.svg'
+import AddVideoIcon from '@/assets/images/add-video.svg'
 import { useResizeDetector } from 'react-resize-detector'
 import VirtualList from '@/components/virtual-list'
 import { useQuery } from '@tanstack/react-query'
@@ -311,7 +311,7 @@ const VideoList = () => {
               <div className="video-date">{item.createTime.replace(/\s\d{2}:\d{2}:\d{2}$/, '')}</div>
               <div>
                 <IconButton size="small" onClick={(e) => startConversation(e, item)}>
-                  <Icon name="NewChatIcon" />
+                  <NewChatIcon />
                 </IconButton>
                 <IconButton size="small" onClick={openOperation}>
                   <MoreHorizIcon fontSize="inherit" />
@@ -374,7 +374,7 @@ const VideoList = () => {
         </div>
         <Tooltip title="upload" arrow>
           <IconButton size="medium" onClick={openUploadModal}>
-            <Icon name="AddVideo" />
+            <AddVideoIcon />
           </IconButton>
         </Tooltip>
       </div>
