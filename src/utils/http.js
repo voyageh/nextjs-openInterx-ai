@@ -1,64 +1,21 @@
-import axios from 'axios'
 import ky from 'ky'
 
-export class Http {
-  constructor(baseURL, config) {
-    this.config = config || {
-      baseURL,
-      timeout: 60000,
-      method: 'GET',
-      responseType: 'json',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-    this.instance = axios.create(this.config)
+const request = ky.create({
+  prefixUrl: '/backend',
+  timeout: 10000,
+  retry: 0,
+})
 
-    this.instance.interceptors.request.use((config) => this.handleRequest(config), this.handleError)
-
-    this.instance.interceptors.response.use(this.handleResponse, this.handleError)
-  }
-
-  handleRequest(config) {
-    if (typeof this.config.beforeRequest === 'function') {
-      this.config.beforeRequest(config)
-    }
-
-    return config
-  }
-
-  handleResponse(response) {
-    const data = response.data
-
-    if (data instanceof Blob) {
-      return response
-    } else if (data.code === '0000') {
-      return data.data
-    } else {
-      return data
-    }
-  }
-
-  handleError(error) {
-    if (error.response) {
-      if (error.response.status === 401) {
-        window.location.href = '/login'
-      }
-    }
-    return Promise.reject(error.response ? error.response.data : error)
-  }
-
-  async request(url, config = {}) {
-    config.url = url
-    return this.instance.request(config)
+request.getData = async (...params) => {
+  const response = await request(...params)
+  const data = await response.json()
+  if (response.ok && data.code === '0000') {
+    return data.data
+  } else {
+    return Promise.reject(data)
   }
 }
 
-export default new Http('/backend')
+request.extended = request.extend()
 
-const request = ky.create({
-  prefixUrl: '/backend/',
-  timeout: 10000,
-})
-
-export { request }
+export default request

@@ -3,7 +3,7 @@ import { auth } from '@/auth'
 
 export default async function (request, response) {
   if (request.nextUrl.pathname.startsWith('/backend')) {
-    const session = await auth()    
+    const session = await auth()            
     const headers = new Headers(request.headers)
     headers.set('Authorization', `Bearer ${session?.accessToken}`)
     return NextResponse.rewrite(request.nextUrl, {

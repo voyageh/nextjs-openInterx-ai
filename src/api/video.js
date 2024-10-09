@@ -1,55 +1,51 @@
-import http from '@/utils/http'
+import request from '@/utils/http'
 
 export const queryVideoTag = () => {
-  return http.request('/serve/video/getVideoTag').then((res) => res.tags)
+  return request.getData('serve/video/getVideoTag').then((res) => res.tags)
 }
 
 export const queryVideoList = (data) => {
-  return http.request('/serve/video/search', {
-    method: 'POST',
-    data,
+  return request.getData('serve/video/search', {
+    method: 'post',
+    json: data,
   })
 }
 
 export const delVidoe = (data) => {
-  return http.request('/serve/video/delete', {
-    method: 'POST',
-    data,
+  return request.getData('serve/video/delete', {
+    method: 'post',
+    json: data,
   })
 }
 
-export const upload = (data, onUploadProgress) => {
-  return http.request('/serve/video/upload', {
-    data,
+export const upload = (data) => {
+  return request.getData('serve/video/upload', {
+    body: data,
     method: 'post',
     timeout: 1800000,
-    onUploadProgress,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
   })
 }
 
 export const uploadUrl = (data) => {
-  return http.request('/serve/video/videoUrlUpload', {
+  return request.getData('serve/video/videoUrlUpload', {
     data,
     method: 'post',
   })
 }
 
 export const send = (data) => {
-  return http.request('/serve/video/question', {
+  return request.getData('serve/video/question', {
     data,
     method: 'post',
   })
 }
 
 export const getChatHistoryList = () => {
-  return http.request('/serve/video/getHisChatList')
+  return request.getData('serve/video/getHisChatList')
 }
 
 export const getChatDetail = (sessionId) => {
-  return http.request('/serve/video/queryHisChatMsg?sessionId=' + sessionId, {
+  return request.getData('serve/video/queryHisChatMsg?sessionId=' + sessionId, {
     method: 'post',
   })
 }

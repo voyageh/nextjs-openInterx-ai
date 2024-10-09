@@ -1,17 +1,19 @@
-// import http from '@/utils/http'
+import request from '@/utils/http'
 
 const login = (token, baseURL) => {
-  return fetch(baseURL + '/auth/customer/login?token=' + token)
+  return request.extended('auth/customer/login?token=' + token, {
+    prefixUrl: baseURL,
+  })
 }
 
-// const getUser = () => {
-//   return http.request('/auth/customer/getCustomerInfo')
-// }
+const getUser = () => {
+  return request.getData('auth/customer/getCustomerInfo')
+}
 
-// const loginout = (params) => {
-//   return http.request('/auth/customer/loginOut', {
-//     params,
-//   })
-// }
+const loginout = (params) => {
+  return request.getData('auth/customer/loginOut', {
+    params,
+  })
+}
 
-export { login }
+export { login, getUser, loginout }

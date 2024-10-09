@@ -12,11 +12,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   providers: [Google],
   callbacks: {
-    async jwt({ token, account }) {
-      if (account?.provider === 'google') {
-        const rsp = await login(account?.access_token, backend)
-        const r = await rsp.json()
-        return { ...token, accessToken: r.token }
+    async signIn({ account, user }) {
+      const response = await login(account?.access_token, backend)
+      const data = await response.json()
+      if (response.ok && data.code === '0000') {
+        user.accessToken = data.data.token
+        return true
+      }
+      return false
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        return { ...token, accessToken: user.accessToken }
       }
       return token
     },
