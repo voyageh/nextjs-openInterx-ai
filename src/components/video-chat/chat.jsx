@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
-import { IconButton, Input, InputAdornment, List, ListItem, ListItemText, Tooltip, Popover } from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
+import { IconButton, Input, InputAdornment, Tooltip, Popover } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import HistoryIcon from '@mui/icons-material/History'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
@@ -10,26 +9,33 @@ import NewChatIcon from '@/assets/images/new-chat.svg'
 import { useUniversalStore } from '@/store/universal'
 import { SvgIcon } from '@mui/material'
 import ChatItem from './chat-item'
-import { send } from '@/api/video'
+import { send, getChatDetail } from '@/api/video'
 import { useScrollAnchor } from '@/hooks/use-scroll-anchor'
-import { uniqueArray } from '@/utils/array'
+import { uniqueArray } from '@/utils'
 import ChatHistory from './chat-history'
+import SelectedList from './selected-list'
+
 import './style/chat.scss'
 
 export default function ChatWindow() {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [msgList, setMsgList] = useState([])
+
+  const seletedRef = useRef()
+  const [type, setType] = useState('')
   const [anchorEl, setAnchorEl] = useState(null)
-  const open2 = Boolean(anchorEl)
-  
+  const open = Boolean(anchorEl)
+
   const [selectedVideos, setSelectedVideos, drag, setDrag] = useUniversalStore((state) => [
     state.selectedVideos,
     state.setSelectedVideos,
     state.drag,
     state.setDrag,
   ])
+
   const { scrollRef, messagesRef, visibilityRef } = useScrollAnchor()
+
   const enableSend = msg && !loading
 
   const onDragEnter = (e) => {
@@ -56,15 +62,13 @@ export default function ChatWindow() {
     const list = JSON.parse(data)
     const newList = uniqueArray([...selectedVideos, ...list], 'id')
     setSelectedVideos(newList)
+    setAnchorEl(seletedRef.current)
+    setType('selected')
   }
 
-  const showList = (e) => {
+  const showList = (type) => (e) => {
+    setType(type)
     setAnchorEl(e.currentTarget)
-  }
-
-  const onDelete = (id) => {
-    const newArr = selectedVideos.filter((item) => item.id !== id)
-    setSelectedVideos([...newArr])
   }
 
   const onChangeMsg = (e) => {
@@ -113,23 +117,26 @@ export default function ChatWindow() {
   const handleClose = () => {
     setAnchorEl(null)
   }
-
+  const handleClick = async (data) => {
+    const msgHistoryList = await getChatDetail(data.sessionId)
+    handleClose()
+    setMsgList(msgHistoryList.chatResponseList)
+  }
 
   return (
     <div className="chat-wrapper">
       <div className="chat-header">
         <div className="selected-video">
-          <div className="selected-video__count" onClick={showList}>
+          <div ref={seletedRef} id="selected" className="selected-video__count" onClick={showList('selected')}>
             <span className="text">{selectedVideos.length} videos</span> <KeyboardArrowDownIcon color="inherit" fontSize="small" />
           </div>
         </div>
         <div className="chat-title">
           <Input defaultValue="Unnamed session" disableUnderline />
         </div>
-
         <div>
           <Tooltip title="history" arrow>
-            <IconButton onClick={showList}>
+            <IconButton id="history" onClick={showList('history')}>
               <HistoryIcon />
             </IconButton>
           </Tooltip>
@@ -189,7 +196,7 @@ export default function ChatWindow() {
       </div>
 
       <Popover
-        open={open2}
+        open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
@@ -200,23 +207,8 @@ export default function ChatWindow() {
           marginTop: '0.5rem',
         }}
       >
-        <OverlayScrollbarsComponent className="selected-video-thumb-scroll">
-          <List className="selected-video-thumb">
-            {selectedVideos.map((item) => (
-              <ListItem
-                key={item.id}
-                className="selected-video-thumb__item"
-                secondaryAction={
-                  <IconButton size="small" edge="end" aria-label="delete" onClick={() => onDelete(item.id)}>
-                    <CloseIcon fontSize="inherit" color="inherit" />
-                  </IconButton>
-                }
-              >
-                <div className="cover" style={{ background: `url(${item.videoCoverImgUrl}) var(--bg-color-0) 50% / cover no-repeat` }} />
-                <ListItemText className="ellipsis-2-lines" secondary={item.videoName} />
-              </ListItem>
-            ))}
-          </List>
+        <OverlayScrollbarsComponent className="popover-scroll">
+          {type === 'history' ? <ChatHistory onClick={handleClick} /> : <SelectedList />}
         </OverlayScrollbarsComponent>
       </Popover>
     </div>

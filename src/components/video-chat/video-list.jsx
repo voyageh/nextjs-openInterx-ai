@@ -41,6 +41,7 @@ import VideoModal from '@/components/video-player/modal'
 import Checkbox from '@/components/checkbox'
 import { enqueueSnackbar } from 'notistack'
 import { queryVideoTag, queryVideoList, delVidoe } from '@/api/video'
+import { formatDuration } from '@/utils'
 
 import 'swiper/css'
 import './style/video-list.scss'
@@ -67,8 +68,9 @@ const initialState = {
   value: '',
   options: [],
   type: 'KEYCLIP',
-  tagLoading: true,
   selectedTag: 'All',
+  isAll: false,
+  indeterminate: false,
   checkedList: {},
   listType: 'card',
   sort: 'DESC',
@@ -86,14 +88,20 @@ function reducer(state, action) {
       return { ...state, ...action.payload }
     }
     case 'setCheckedList':
-      if (action.flag) {
-        return { ...state, checkedList: action.payload }
+      const { value, flag, total } = action.payload
+      let checkedList = {}
+
+      if (flag) {
+        checkedList = value
+      } else if (state.checkedList[value.id]) {
+        const { [value.id]: _, ...rest } = state.checkedList
+        checkedList = rest
+      } else {
+        checkedList = { ...state.checkedList, [value.id]: value }
       }
-      if (state.checkedList[action.payload.id]) {
-        const { [action.payload.id]: _, ...checkedList } = state.checkedList
-        return { ...state, checkedList }
-      }
-      return { ...state, checkedList: { ...state.checkedList, [action.payload.id]: action.payload } }
+      const isAll = Object.keys(checkedList).length === total
+      const indeterminate = !!Object.keys(checkedList).length && !isAll
+      return { ...state, checkedList, indeterminate, isAll }
     case 'setListType':
       let listType = action.payload
       const size = calcSize(state.width, listType)
@@ -109,14 +117,14 @@ const VideoList = () => {
   const uploadRef = useRef(null)
   const videoRef = useRef(null)
 
-  const { data: tags } = useQuery({
+  const { isFetching: tagsLoading, data: tags } = useQuery({
     queryKey: ['video-tags'],
     queryFn: () => queryVideoTag(),
     initialData: [],
   })
 
   const { isFetching, data, refetch } = useQuery({
-    queryKey: ['video-list', state.value, state.selectedTag, state.sortFileds, state.sort],
+    queryKey: ['video-list', state.value, state.selectedTag, state.type, state.sortFileds, state.sort],
     queryFn: () =>
       queryVideoList({
         searchValue: state.value,
@@ -176,20 +184,26 @@ const VideoList = () => {
   const onSelectVideo = (item) => {
     dispatch({
       type: 'setCheckedList',
-      payload: item,
+      payload: {
+        value: item,
+        total: data.total,
+      },
     })
   }
 
   const onSelectAll = (e) => {
     const list = data.videoResponseList.reduce((pre, next) => {
-      pre[next.id] = next // 将 id 作为 key，item 作为 value
+      pre[next.id] = next
       return pre
     }, {})
 
     dispatch({
       type: 'setCheckedList',
-      flag: true,
-      payload: e.target.checked ? list : {},
+      payload: {
+        value: e.target.checked ? list : {},
+        flag: true,
+        total: data.total,
+      },
     })
   }
 
@@ -244,7 +258,14 @@ const VideoList = () => {
     let sVideos = [v]
     if (!v) {
       sVideos = Object.values(state.checkedList)
-      dispatch({ type: 'setCheckedList', flag: true, payload: {} })
+      dispatch({
+        type: 'setCheckedList',
+        payload: {
+          value: {},
+          flag: true,
+          total: data.total,
+        },
+      })
     }
 
     setSelectedVideos(sVideos, true)
@@ -263,6 +284,14 @@ const VideoList = () => {
   const onDragEnd = (e) => {
     e.preventDefault()
     setDrag('')
+    dispatch({
+      type: 'setCheckedList',
+      payload: {
+        value: {},
+        flag: true,
+        total: data.total,
+      },
+    })
   }
 
   const playerVideo = (url, seekTo) => {
@@ -280,7 +309,14 @@ const VideoList = () => {
   const confirmDelete = async () => {
     await delVidoe(Object.keys(state.checkedList))
     enqueueSnackbar('Delete successfully!', { variant: 'success' })
-    dispatch({ type: 'setCheckedList', flag: true, payload: {} })
+    dispatch({
+      type: 'setCheckedList',
+      payload: {
+        flag: true,
+        checkedList: {},
+        total: data.total,
+      },
+    })
     refetch()
     closeDelModal()
   }
@@ -293,7 +329,8 @@ const VideoList = () => {
           style={{ backgroundImage: `url(${item.videoCoverImgUrl || '1.png'})` }}
           onClick={() => playerVideo(item.videoUrl)}
         >
-          <div className="video-cover__mask text">{item.videoTime || '04:49'}</div>
+          <div className="video-cover__mask text">{formatDuration(item.duration)}</div>
+
           <Checkbox
             checked={!!state.checkedList[item.id]}
             value={item.id}
@@ -306,7 +343,7 @@ const VideoList = () => {
         <div className="video-info">
           <div className="video-basic">
             <div className="video-name ellipsis-2-lines">{item.videoName}</div>
-            {state.listType === 'list' && <div className="text">{item.videoTime || '04:09'}</div>}
+            {state.listType === 'list' && <div className="text">{formatDuration(item.duration)}</div>}
             <div className="video-date-wrapper">
               <div className="video-date">{item.createTime.replace(/\s\d{2}:\d{2}:\d{2}$/, '')}</div>
               <div>
@@ -319,18 +356,27 @@ const VideoList = () => {
               </div>
             </div>
           </div>
-          {state.listType === 'list' && (
+          {state.listType === 'list' && item.keyframes && (
             <div className="video-progress">
-              {Array.from({ length: 20 }, () => Math.floor(Math.random() * 100) + 1).map((position, i) => (
+              {item.keyframes?.map((keyframe, i) => (
                 <Tooltip
                   classes={{
-                    tooltip: 'video-keyClip-thumb',
+                    tooltip: 'video-keyclip-thumb',
                   }}
                   key={i}
-                  title={<img src="1.png" style={{ width: '10rem', height: '8rem' }} />}
+                  title={
+                    <div className="video-keyclip-thumb-content">
+                      <img src={keyframe.keyframesImgUrl} />
+                      <div className="mask text">{formatDuration(keyframe.index)}</div>
+                    </div>
+                  }
                   placement="top"
                 >
-                  <div className="progress-keyClip" style={{ left: `${position}%` }} onClick={() => playerVideo(item.videoUrl, position / 100)} />
+                  <div
+                    className="progress-keyClip"
+                    style={{ left: `${keyframe.keyframesLocation * 100}%` }}
+                    onClick={() => playerVideo(item.videoUrl, keyframe.keyframesLocation)}
+                  />
                 </Tooltip>
               ))}
             </div>
@@ -426,7 +472,7 @@ const VideoList = () => {
       </div>
       <div className="video-list__sort">
         <div className="select-all">
-          <Checkbox size="small" onChange={onSelectAll} /> all videos {data.total} total
+          <Checkbox checked={state.isAll} indeterminate={state.indeterminate} size="small" onChange={onSelectAll} /> all videos {data.total} total
           {selectLen > 0 && <span>{selectLen} selected</span>}
         </div>
         <div>

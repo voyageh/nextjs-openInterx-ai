@@ -14,7 +14,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, account }) {
       if (account?.provider === 'google') {
-        const r = await login(account?.access_token, backend)
+        const rsp = await login(account?.access_token, backend)
+        const r = await rsp.json()
         return { ...token, accessToken: r.token }
       }
       return token

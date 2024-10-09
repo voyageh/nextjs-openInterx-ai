@@ -123,22 +123,23 @@
   }
 }
 
-.selected-video-thumb-scroll {
-  width: 300px;
+.popover-scroll {
+  width: 360px;
   max-height: 300px;
-  
+
   .os-scrollbar-vertical .os-scrollbar-handle {
     height: 60px;
     background-color: var(--grey-color-4);
   }
 
-  .selected-video-thumb {
+  &__list {
     border-radius: 8px;
     background: var(--bg-color-1);
     padding: 4px 0;
 
     &__item {
       gap: 10px;
+      
       .cover {
         width: 80px;
         min-height: 44px;

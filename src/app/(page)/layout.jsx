@@ -13,10 +13,10 @@ export default function RootLayout({ children }) {
           <Logo className="logo-icon" />
         </div>
         <div className="menu-wrapper">
-          <NavItem href="/my-video" label="My video">
+          <NavItem href="/my-video" title="My video">
             <MyVideo className="menu-icon" />
           </NavItem>
-          <NavItem href="/sample-video" label="Sample video">
+          <NavItem href="/sample-video" title="Sample video">
             <SampleVideo className="menu-icon" />
           </NavItem>
         </div>

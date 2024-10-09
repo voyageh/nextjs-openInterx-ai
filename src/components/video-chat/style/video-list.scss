@@ -298,7 +298,7 @@
               .progress-keyClip {
                 cursor: pointer;
                 position: absolute;
-                width: 2px;
+                width: 4px;
                 height: 100%;
                 background-color: var(--brand-color-2);
               }
@@ -345,7 +345,30 @@
   }
 }
 
-
-.video-keyClip-thumb{
+.video-keyclip-thumb {
   padding: 0.2rem 0.2rem 0;
+
+  &-content {
+    position: relative;
+
+    img {
+      width: 16rem;
+      height: 10rem;
+    }
+
+    .mask {
+      padding: 4px 4px 0px;
+      border-radius: 8px 0px 0px 0px;
+      background: rgba(249, 249, 249, 0.6);
+      position: absolute;
+      right: 0;
+      bottom: 5px;
+    }
+
+    .mask.text {
+      color: #000;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
 }

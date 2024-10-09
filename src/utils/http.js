@@ -1,4 +1,5 @@
 import axios from 'axios'
+import ky from 'ky'
 
 export class Http {
   constructor(baseURL, config) {
@@ -54,3 +55,10 @@ export class Http {
 }
 
 export default new Http('/backend')
+
+const request = ky.create({
+  prefixUrl: '/backend/',
+  timeout: 10000,
+})
+
+export { request }

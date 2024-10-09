@@ -49,10 +49,7 @@ export const getChatHistoryList = () => {
 }
 
 export const getChatDetail = (sessionId) => {
-  return http.request('/serve/video/queryHisChatMsg', {
+  return http.request('/serve/video/queryHisChatMsg?sessionId=' + sessionId, {
     method: 'post',
-    data: {
-      sessionId,
-    },
   })
 }

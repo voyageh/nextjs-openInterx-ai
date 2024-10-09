@@ -1,0 +1,30 @@
+.empty-wrapper {
+  padding: 30px 0;
+  .empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 20%;
+      height: 20%;
+      margin-left: 20px;
+    }
+  }
+
+  .empty-description {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color-2);
+    margin-top: 15px;
+
+    .text {
+      color: var(--text-color-3);
+      text-align: center;
+      font-size: var(--font-size-1);
+      font-weight: 400;
+    }
+  }
+}

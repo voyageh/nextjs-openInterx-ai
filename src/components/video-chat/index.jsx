@@ -1,4 +1,5 @@
 'use client'
+
 import { Resizable } from 're-resizable'
 import { useUserStore } from '@/store/user'
 import ChatWindow from './chat'
