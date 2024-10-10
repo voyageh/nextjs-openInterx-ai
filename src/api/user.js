@@ -12,7 +12,7 @@ const getUser = () => {
 
 const loginout = (params) => {
   return request.getData('auth/customer/loginOut', {
-    params,
+    searchParams: params,
   })
 }
 

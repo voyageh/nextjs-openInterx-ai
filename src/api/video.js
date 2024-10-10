@@ -1,7 +1,7 @@
 import request from '@/utils/http'
 
 export const queryVideoTag = () => {
-  return request.getData('serve/video/getVideoTag').then((res) => res.tags)
+  return request.getData('serve/video/getVideoTag').then((res) => ['All', ...res.tags])
 }
 
 export const queryVideoList = (data) => {
@@ -18,20 +18,20 @@ export const delVidoe = (data) => {
   })
 }
 
-export const upload = (data, onUploadProgress) => {
-  return request.upload('/backend/serve/video/upload', data, { onUploadProgress })
+export const upload = (data, config) => {
+  return request.upload('serve/video/upload', data, config)
 }
 
 export const uploadUrl = (data) => {
   return request.getData('serve/video/videoUrlUpload', {
-    data,
+    json: data,
     method: 'post',
   })
 }
 
 export const send = (data) => {
   return request.getData('serve/video/question', {
-    data,
+    json: data,
     method: 'post',
   })
 }

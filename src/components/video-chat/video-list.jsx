@@ -78,6 +78,7 @@ const initialState = {
   size: 3,
   span: 0,
   showDel: false,
+  currentItem: null,
   anchorPosition: null,
 }
 
@@ -270,14 +271,14 @@ const VideoList = () => {
     setSelectedVideos(sVideos, true)
   }
 
-  const openOperation = (e) => {
+  const openOperation = (e, v) => {
     e.stopPropagation()
     const { x, y, height } = e.target.getBoundingClientRect()
-    dispatch({ type: 'setState', payload: { anchorPosition: { left: x, top: y + height } } })
+    dispatch({ type: 'setState', payload: { currentItem: v, anchorPosition: { left: x, top: y + height } } })
   }
 
   const closeOperation = () => {
-    dispatch({ type: 'setState', payload: { anchorPosition: null } })
+    dispatch({ type: 'setState', payload: { currentItem: null, anchorPosition: null } })
   }
 
   const onDragEnd = (e) => {
@@ -298,7 +299,7 @@ const VideoList = () => {
   }
 
   const openDelModal = () => {
-    dispatch({ type: 'setState', payload: { showDel: true } })
+    dispatch({ type: 'setState', payload: { showDel: true, anchorPosition: null } })
   }
 
   const closeDelModal = () => {
@@ -306,13 +307,21 @@ const VideoList = () => {
   }
 
   const confirmDelete = async () => {
-    await delVidoe(Object.keys(state.checkedList))
+    let ids = []
+    if (state.currentItem) {
+      ids = [state.currentItem.id]
+    } else {
+      ids = Object.keys(state.checkedList)
+    }
+    await delVidoe(ids)
+
     enqueueSnackbar('Delete successfully!', { variant: 'success' })
+
     dispatch({
       type: 'setCheckedList',
       payload: {
         flag: true,
-        checkedList: {},
+        value: {},
         total: data.total,
       },
     })
@@ -349,7 +358,7 @@ const VideoList = () => {
                 <IconButton size="small" onClick={(e) => startConversation(e, item)}>
                   <NewChatIcon />
                 </IconButton>
-                <IconButton size="small" onClick={openOperation}>
+                <IconButton size="small" onClick={(e) => openOperation(e, item)}>
                   <MoreHorizIcon fontSize="inherit" />
                 </IconButton>
               </div>
@@ -549,7 +558,7 @@ const VideoList = () => {
       <Popover anchorReference="anchorPosition" anchorPosition={state.anchorPosition} open={Boolean(state.anchorPosition)} onClose={closeOperation}>
         <MenuItem>Download</MenuItem>
         <MenuItem>Rename</MenuItem>
-        <MenuItem>Delete</MenuItem>
+        <MenuItem onClick={openDelModal}>Delete</MenuItem>
       </Popover>
     </div>
   )
