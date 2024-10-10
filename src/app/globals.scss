@@ -33,6 +33,12 @@ body {
   color: var(--text-color-0);
 }
 
+.ellipsis-1-lines {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 //超出两行省略号
 .ellipsis-2-lines {
   overflow: hidden;

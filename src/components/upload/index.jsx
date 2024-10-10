@@ -1,8 +1,23 @@
 import { useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, TextField, InputAdornment, IconButton, Fab } from '@mui/material'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Tabs,
+  Tab,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Fab,
+  LinearProgress,
+  Tooltip,
+} from '@mui/material'
+import AddVideoIcon from '@/assets/images/add-video.svg'
 import LinkIcon from '@mui/icons-material/Link'
-import VideoFileIcon from '@mui/icons-material/VideoFile'
+import VideoFileIcon from '@/assets/images/video-file.svg'
 import CloseIcon from '@mui/icons-material/Close'
 import UploadIcon from '@mui/icons-material/Upload'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react'
@@ -23,14 +38,27 @@ const UploadVideo = (_, ref) => {
   const [urls, setUrls] = useState([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const [uploadList, setUploadList] = useState([])
+
+  const [open2, setOpen2] = useState(false)
+
   const queryClient = useQueryClient()
 
   const handleClose = () => {
     setOpen(false)
   }
 
+  const handleClose2 = () => {
+    setOpen2(false)
+  }
+
   const handleOpen = () => {
     setOpen(true)
+  }
+
+  const handleOpen2 = () => {
+    setOpen2(true)
   }
 
   useImperativeHandle(
@@ -51,7 +79,7 @@ const UploadVideo = (_, ref) => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
-      'video/*': [],
+      // 'video/*': [],
     },
     maxSize: 1 * 1024 * 1024 * 1024,
   })
@@ -78,20 +106,23 @@ const UploadVideo = (_, ref) => {
     urlInfo[info.url] = info
   }
 
-  const handleUploadProgress = (e) => {
-    const progress = Math.round((e.loaded * 100) / e.total)
-    console.log('progress', e)
+  const handleUploadProgress = (i, v) => {
+    setUploadList((prev) => {
+      const newArr = [...prev]
+      newArr[i].progress = v
+      return newArr
+    })
   }
-  
+
   const handleUpload = async () => {
     const requestList = []
 
-    files.forEach((file) => {
+    files.forEach((file, i) => {
       requestList.push(
         limit(() => {
           const formData = new FormData()
           formData.append('file', file)
-          return upload(formData, handleUploadProgress)
+          return upload(formData, (v) => handleUploadProgress(i, v))
         })
       )
     })
@@ -108,22 +139,41 @@ const UploadVideo = (_, ref) => {
 
     setOpen(false)
     setLoading(true)
+    setUploadList([...files])
+    setFiles([])
+    setUrls([])
     await Promise.all(requestList)
+    setLoading(false)
     enqueueSnackbar('Upload successfully!', { variant: 'success', anchorOrigin: { vertical: 'top', horizontal: 'center' } })
     queryClient.invalidateQueries(['video-list'])
   }
 
   return (
     <>
-      <Dialog open={open} onClose={handleClose} disableRestoreFocus className="upload-dialog" maxWidth="xl">
+      <div className="upload-operate-wrapper">
+        {loading && (
+          <Button className="uploading-btn" variant="outlined" color="success" startIcon={<UploadIcon />} onClick={handleOpen2}>
+            {uploadList.length}
+          </Button>
+        )}
+
+        <Tooltip title="upload" arrow>
+          <IconButton size="medium" onClick={handleOpen}>
+            <AddVideoIcon />
+          </IconButton>
+        </Tooltip>
+      </div>
+
+      <Dialog className="upload-dialog" open={open} onClose={handleClose} disableRestoreFocus maxWidth={false}>
         <DialogTitle>Upload Video</DialogTitle>
-        <DialogContent sx={{ overflow: 'hidden' }}>
-          <div className="upload-video">
+
+        <DialogContent>
+          <div className="upload-content">
             <Tabs value={tab} centered={true} onChange={onTabChange}>
               <Tab label="Local Upload" value="1" />
               <Tab label="Upload via URL" value="2" />
             </Tabs>
-            <div className="upload-video__content">
+            <div className="upload-content-main">
               {tab === '1' ? (
                 <div {...getRootProps()} className="drag-upload">
                   <input {...getInputProps()} />
@@ -138,10 +188,10 @@ const UploadVideo = (_, ref) => {
                       <div className="preview-list">
                         {files.map((file, index) => (
                           <div key={index} className="preview-item">
-                            <VideoFileIcon color="success" sx={{ fontSize: '2.6rem', color: '#BFBAFF' }} />
-                            <div className="file-info">
-                              <div className="ellipsis-2-lines file-info__name ">{file.name}</div>
-                              <div className="file-info__size">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
+                            <VideoFileIcon className="preview-item__icon" />
+                            <div className="preview-item__info">
+                              <div className="preview-item__info__name ellipsis-1-lines">{file.name}</div>
+                              <div className="preview-item__info__size">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
                             </div>
                             <IconButton className="del-btn" aria-label="delete" size="small" disableRipple={true}>
                               <CloseIcon fontSize="inherit" onClick={(e) => delFile(e, index)} />
@@ -196,11 +246,38 @@ const UploadVideo = (_, ref) => {
           </Button>
         </DialogActions>
       </Dialog>
-      {loading && (
-        <Fab variant="extended" color="success" sx={{ position: 'fixed', bottom: '5%', left: '40%' }}>
-          <UploadIcon color="inherit" /> <span>Videos Uploading</span>
-        </Fab>
-      )}
+
+      <Dialog className="upload-dialog" open={open2} onClose={handleClose2} disableRestoreFocus maxWidth={false}>
+        <DialogTitle>{uploadList.length} Videos Uploading</DialogTitle>
+        <DialogContent>
+          <OverlayScrollbarsComponent className="uploading-list-scroll" defer>
+            <div className="uploading-list">
+              {uploadList.map((file, index) => (
+                <div key={index} className="uploading-list__item">
+                  <VideoFileIcon className="uploading-list__item__icon" />
+                  <div className="uploading-list__item__info">
+                    <div className="file-info">
+                      <div className="file-info__name ellipsis-1-lines">{file.name}</div>
+                      <div className="file-info__size">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
+                    </div>
+                    <div className="uploading-list__item__progress">
+                      <LinearProgress variant="determinate" color="success" value={file.progress} />
+                    </div>
+                  </div>
+                  <IconButton className="del-btn" aria-label="delete" size="small" disableRipple={true}>
+                    <CloseIcon fontSize="inherit" onClick={(e) => delFile(e, index)} />
+                  </IconButton>
+                </div>
+              ))}
+            </div>
+          </OverlayScrollbarsComponent>
+        </DialogContent>
+        <DialogActions>
+          <Button color="inherit" fullWidth variant="outlined" onClick={handleClose}>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

@@ -18,12 +18,8 @@ export const delVidoe = (data) => {
   })
 }
 
-export const upload = (data) => {
-  return request.getData('serve/video/upload', {
-    body: data,
-    method: 'post',
-    timeout: 1800000,
-  })
+export const upload = (data, onUploadProgress) => {
+  return request.upload('/backend/serve/video/upload', data, { onUploadProgress })
 }
 
 export const uploadUrl = (data) => {

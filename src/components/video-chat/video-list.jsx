@@ -30,7 +30,6 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import GridViewIcon from '@mui/icons-material/GridView'
 import NewChatIcon from '@/assets/images/new-chat.svg'
-import AddVideoIcon from '@/assets/images/add-video.svg'
 import { useResizeDetector } from 'react-resize-detector'
 import VirtualList from '@/components/virtual-list'
 import { useQuery } from '@tanstack/react-query'
@@ -418,11 +417,7 @@ const VideoList = () => {
             <MenuItem value="GLOBAL">Global</MenuItem>
           </Select>
         </div>
-        <Tooltip title="upload" arrow>
-          <IconButton size="medium" onClick={openUploadModal}>
-            <AddVideoIcon />
-          </IconButton>
-        </Tooltip>
+        <Upload ref={uploadRef} />
       </div>
       <div className="video-list__filter">
         <Swiper
@@ -525,8 +520,6 @@ const VideoList = () => {
           }
         />
       </div>
-
-      <Upload ref={uploadRef} />
 
       <VideoModal ref={videoRef} />
 
