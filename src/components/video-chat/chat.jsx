@@ -81,7 +81,7 @@ export default function ChatWindow() {
   }
 
   const sendMsg = async (e) => {
-    if (e.key === 'Enter' || e.type === 'click') {
+    if ((e.key === 'Enter' || e.type === 'click') && !loading) {
       setLoading(true)
       setMsgList([
         ...msgList,
@@ -101,16 +101,33 @@ export default function ChatWindow() {
           },
         ]
       })
-      const r = await send({
+      send({
         msg,
         videoNoList: selectedVideos.map((item) => item.id),
       })
-
-      setMsgList((pre) => {
-        const newMsgList = pre.slice(0, -1)
-        return [...newMsgList, r]
-      })
-      setLoading(false)
+        .then((r) => {
+          setMsgList((pre) => {
+            const newMsgList = pre.slice(0, -1)
+            return [...newMsgList, r]
+          })
+        })
+        .catch((error) => {
+          console.dir(e)
+          setMsgList((pre) => {
+            const newMsgList = pre.slice(0, -1)
+            return [
+              ...newMsgList,
+              {
+                response: {
+                  message: error.message.split(':')[0],
+                },
+              },
+            ]
+          })
+        })
+        .finally(() => {
+          setLoading(false)
+        })
     }
   }
 

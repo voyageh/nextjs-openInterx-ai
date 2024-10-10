@@ -2,7 +2,7 @@ import ky from 'ky'
 
 const request = ky.create({
   prefixUrl: '/backend',
-  timeout: 10000,
+  timeout: 60000,
   retry: 0,
 })
 
